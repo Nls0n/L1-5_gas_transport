@@ -1,20 +1,38 @@
-﻿// L0_gas_transport.cpp : Этот файл содержит функцию "main". Здесь начинается и заканчивается выполнение программы.
-//
+﻿#include <iostream>
+using namespace std;
 
-#include <iostream>
+class Pipe {
+    public:
+        string km_mark;
+        float lenght; // km
+        float diameter; // mm
+        bool is_in_repair;
+};
+
+class CompressorStation {
+    public:
+        string name;
+        int workshop_count;
+        int current_working_workshop_count; 
+        float station_cls; // я так и не понял какой нужен тип
+};
 
 int main()
 {
-    std::cout << "Hello World!\n";
+    int user_input;
+    while (true) {
+        cin >> user_input;
+        switch (user_input){
+        case 1: // add pipe
+        case 2: // add CS
+        case 3: // see all objects
+        case 4: // change pipe
+        case 5: // change CS
+        case 6: // save
+        case 7: // load
+        case 0: // exit
+        default: cout << "Input is incorrect\n try digits in range 0-7";
+        }
+    }
 }
 
-// Запуск программы: CTRL+F5 или меню "Отладка" > "Запуск без отладки"
-// Отладка программы: F5 или меню "Отладка" > "Запустить отладку"
-
-// Советы по началу работы 
-//   1. В окне обозревателя решений можно добавлять файлы и управлять ими.
-//   2. В окне Team Explorer можно подключиться к системе управления версиями.
-//   3. В окне "Выходные данные" можно просматривать выходные данные сборки и другие сообщения.
-//   4. В окне "Список ошибок" можно просматривать ошибки.
-//   5. Последовательно выберите пункты меню "Проект" > "Добавить новый элемент", чтобы создать файлы кода, или "Проект" > "Добавить существующий элемент", чтобы добавить в проект существующие файлы кода.
-//   6. Чтобы снова открыть этот проект позже, выберите пункты меню "Файл" > "Открыть" > "Проект" и выберите SLN-файл.
