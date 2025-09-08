@@ -11,23 +11,73 @@ class Pipe {
         float length; // km
         float diameter; // mm
         bool is_in_repair;
+        bool is_float(string str) {
+            regex float_regex(R"(^[-+]?\d*\.?\d+$)"); // при надобности могу объяснить что значит эта регулярка
+            if (regex_match(str, float_regex)) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
         void read_from_console() {
-            cout << "Input kilometers mark (name)\n";
+            string input;
+            cout << "Input kilometers mark (name)" << endl;
             cin >> km_mark;
-            cout << "Input length (km)\n";
-            cin >> length;
+            cout << "km_mark " << km_mark << endl;
+            cout << "Input length (km)" << endl;
+            cin >> input;
+            if (is_float(input)) {
+                float temp;
+                temp = stof(input);
+                if (temp < 0) {
+                    cout << "Length must be positive" << endl;
+                }
+                else {
+                    length = temp;
+                    cout << "length" << length << endl;
+                }
+            }
             cout << "Input diameter (km)\n";
-            cin >> diameter;
-            cout << "Input pipe repair status (1 - true, 0 - false)\n";
-            cin >> is_in_repair;
+            cin >> input;
+            if (is_float(input)) {
+                float temp;
+                temp = stof(input);
+                if (temp < 0) {
+                    cout << "Diameter must be positive" << endl;
+                }
+                else {
+                    diameter = temp;
+                    cout << "diameter " << diameter << endl;
+                }
+            }
+            cout << "Input pipe repair status true/false" << endl;
+            cin >> input;
+            if (input == "true") {
+                is_in_repair = true;
+                cout << "is_in_repair" << is_in_repair << endl;
+            }
+            else if (input == "false") {
+                is_in_repair = false;
+                cout << "is_in_repair" << is_in_repair << endl;
+            }
+            else {
+                cout << "Incorrect data format";
+            }
         }
         void write_to_console() {
-            cout << "Pipe length (km) " << length << endl;
-            cout << "Pipe diameter (mm) " << diameter << endl;
-            cout << "Pipe repair status " << is_in_repair << endl;
+            if (length && diameter && is_in_repair) {
+                cout << "Pipe length (km) " << length << endl;
+                cout << "Pipe diameter (mm) " << diameter << endl;
+                cout << "Pipe repair status " << is_in_repair << endl;
+            }
+            else {
+                cout << "Data is not given" << endl;
+            }
         }
         void change_status() {
             is_in_repair = !is_in_repair;
+            cout << "Current status " << is_in_repair << endl;
         }
         void save_to_file() {
             ofstream out;
@@ -66,8 +116,7 @@ class Pipe {
                                 km_mark = value;
                             }
                             else if (word == "length") {
-                                regex float_regex(R"(^[-+]?\d*\.?\d+$)"); // при надобности могу объяснить что значит эта регулярка
-                                if (regex_match(value, float_regex)) {
+                                if (is_float(value)) {
                                     float temp;
                                     temp = stof(value); // string -> float
                                     if (temp < 0) {
@@ -83,8 +132,7 @@ class Pipe {
                                 
                             }
                             else if (word == "diameter") {
-                                regex float_regex(R"(^[-+]?\d*\.?\d+$)"); // при надобности могу объяснить что значит эта регулярка
-                                if (regex_match(value, float_regex)) {
+                                if (is_float(value)) {
                                     float temp;
                                     temp = stof(value); // string -> float
                                     if (temp < 0) {
@@ -126,6 +174,7 @@ class CompressorStation {
         int workshop_count;
         int current_working_workshop_count; 
         float station_cls; // я так и не понял какой нужен тип
+
 };
 
 int main()
@@ -142,8 +191,9 @@ int main()
         case 6: // save
         case 7: // load
         case 0: // exit
-        default: cout << "Input is incorrect\n try digits in range 0-7";
+        default: cout << "Input is incorrect\n try digits in range [0-7]";
         }
     }
+    return 0;
 }
 
