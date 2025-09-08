@@ -1,0 +1,4 @@
+km_mark another
+length 12
+diameter 13
+is_in_repair 1

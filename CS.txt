@@ -1,0 +1,4 @@
+name asd
+workshop_count 5
+current_working_workshop_count 3
+station_cls 13.3
