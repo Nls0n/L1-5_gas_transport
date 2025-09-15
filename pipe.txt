@@ -1,4 +1,4 @@
-km_mark another
-length 12
-diameter 13
-is_in_repair 1
+qwe asd xzc
+123
+123
+1
