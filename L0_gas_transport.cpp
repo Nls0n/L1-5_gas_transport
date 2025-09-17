@@ -1,30 +1,34 @@
 ﻿#include <iostream>
 #include <string>
 #include <fstream>
+#include <limits>
 
 using namespace std;
 
+// визуалка сказала сделать ф-ю статической, честно так и не понял для чего
+static void clear() { // насколько я помню статические МЕТОДЫ нужны если они не относятся к классу, не взаимодействуют с ним, зачем тут? - не знаю, объясните пжлст
+    cin.clear();
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+}
+
 void float_input(float& var) {
     while (!(cin >> var) || var <= 0) {
-        cin.clear();
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-        cout << "Invalid input. Enter positive number: ";
+        clear();
+        cout << "Invalid input. Enter positive float number: ";
     }
-    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    clear();
 }
 
 void int_input(int& var) {
     while (!(cin >> var) || var <= 0) {
-        cin.clear();
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-        cout << "Invalid input. Enter positive number: ";
+        clear();
+        cout << "Invalid input. Enter positive int number: ";
     }
-    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    clear();
 }
 
 
-class Pipe {
-public:
+struct Pipe {
     string km_mark;
     float length; // km
     int diameter; // mm
@@ -41,8 +45,7 @@ public:
         int_input(diameter);
         cout << "Input is_in_repair status: ";
         while (!(cin >> is_in_repair || (is_in_repair < 0 && is_in_repair > 1))) {
-            cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            clear();
             cout << "Invalid input. Enter 1 or 0: ";
         }
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
@@ -84,8 +87,7 @@ public:
     }
 };
 
-class CompressorStation {
-public:
+struct CompressorStation {
     string name;
     int workshop_count;
     int current_working_workshop_count;
@@ -183,8 +185,7 @@ int main() {
 
         if (!(cin >> user_input)) {
             cout << "Invalid input. Please enter a number." << endl;
-            cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
+            clear();
             continue;
         }
         cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
@@ -231,8 +232,7 @@ int main() {
 
         case 5:
             if (cs.name != "") {
-                cout << "Current working workshops: " << cs.current_working_workshop_count
-                    << " / " << cs.workshop_count << endl;
+                cout << "Current working workshops: " << cs.current_working_workshop_count << " / " << cs.workshop_count << endl;
                 cout << "1. Start workshop" << endl;
                 cout << "2. Stop workshop" << endl;
 
@@ -248,12 +248,11 @@ int main() {
                     else {
                         cout << "Invalid action!" << endl;
                     }
-                    cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
+                    clear();
                 }
                 else {
                     cout << "Invalid input!" << endl;
-                    cin.clear();
-                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                    clear();
                 }
             }
             else {
@@ -291,8 +290,7 @@ int main() {
 
         default:
             cout << "Input is incorrect. Please try digits in range [0-7]" << endl;
-            cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
+            clear();
         }
     }
     return 0;
