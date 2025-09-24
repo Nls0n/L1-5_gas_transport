@@ -5,8 +5,7 @@
 
 using namespace std;
 
-// визуалка сказала сделать ф-ю статической, честно так и не понял для чего
-static void clear() { // насколько я помню статические МЕТОДЫ нужны если они не относятся к классу, не взаимодействуют с ним, зачем тут? - не знаю, объясните пжлст
+void clear() {
     cin.clear();
     cin.ignore(numeric_limits<streamsize>::max(), '\n');
 }
@@ -28,12 +27,12 @@ void int_input(int& var) {
 }
 
 
-struct Pipe {
+class Pipe {
+public:
     string km_mark;
     float length; // km
     int diameter; // mm
     bool is_in_repair;
-
     void read_from_console() {
         string input;
 
@@ -44,7 +43,7 @@ struct Pipe {
         cout << "Input pipe diameter: ";
         int_input(diameter);
         cout << "Input is_in_repair status: ";
-        while (!(cin >> is_in_repair || (is_in_repair < 0 && is_in_repair > 1))) {
+        while (!(cin >> is_in_repair)) {
             clear();
             cout << "Invalid input. Enter 1 or 0: ";
         }
@@ -63,19 +62,6 @@ struct Pipe {
         cout << "Current status: " << is_in_repair << endl;
     }
 
-    void save_to_file() {
-        ofstream out;
-        out.open("pipe.txt");
-        if (out.is_open()) {
-            out << km_mark << endl;
-            out << length << endl;
-            out << diameter << endl;
-            out << is_in_repair << endl; 
-        }
-        out.close();
-        cout << "Pipe data saved to file" << endl;
-    }
-
     void load_from_file(string filename) {
         ifstream file(filename);
         getline(file, km_mark);
@@ -87,7 +73,8 @@ struct Pipe {
     }
 };
 
-struct CompressorStation {
+class CompressorStation {
+public:
     string name;
     int workshop_count;
     int current_working_workshop_count;
@@ -143,22 +130,12 @@ struct CompressorStation {
         }
     }
 
-    void save_to_file() {
-        ofstream out;
-        out.open("CS.txt");
-        if (out.is_open()) {
-            out << name << endl;
-            out << workshop_count << endl;
-            out << current_working_workshop_count << endl;
-            out << station_cls << endl;
-        }
-        out.close();
-        cout << "CS data saved to file" << endl;
-    }
-
     void load_from_file(string filename) {
         ifstream file(filename);
-        getline(file, name);
+        string line;
+        for (int i = 0; i <= 4; i++) {
+            getline(file, line);
+        }
         file >> workshop_count;
         file >> current_working_workshop_count;
         file >> station_cls;
@@ -166,6 +143,24 @@ struct CompressorStation {
         cout << "Data loaded from file " << filename << endl;
     }
 };
+
+void save_to_file(Pipe pipe, CompressorStation cs) {
+    ofstream out;
+    out.open("data.txt");
+    if (out.is_open()) {
+        out << pipe.km_mark << endl;
+        out << pipe.length << endl;
+        out << pipe.diameter << endl;
+        out << pipe.is_in_repair << endl;
+        out << cs.name << endl;
+        out << cs.workshop_count << endl;
+        out << cs.current_working_workshop_count << endl;
+        out << cs.station_cls << endl;
+
+    }
+    out.close();
+    cout << "data saved to file" << endl;
+}
 
 int main() {
     Pipe pipe;
@@ -188,7 +183,7 @@ int main() {
             clear();
             continue;
         }
-        cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
         switch (user_input) {
         case 1:
@@ -231,46 +226,47 @@ int main() {
             break;
 
         case 5:
-            if (cs.name != "") {
-                cout << "Current working workshops: " << cs.current_working_workshop_count << " / " << cs.workshop_count << endl;
-                cout << "1. Start workshop" << endl;
-                cout << "2. Stop workshop" << endl;
+        {
+            if (cs.name == "") {
+                cout << "No compressor station available to modify. Please add a CS first." << endl;
+                break;
+            }
 
-                int cs_action;
-                cout << "Choose action: ";
-                if (cin >> cs_action) {
-                    if (cs_action == 1) {
-                        cs.start_workshop();
-                    }
-                    else if (cs_action == 2) {
-                        cs.stop_workshop();
-                    }
-                    else {
-                        cout << "Invalid action!" << endl;
-                    }
-                    clear();
-                }
-                else {
-                    cout << "Invalid input!" << endl;
-                    clear();
-                }
+            cout << "Current working workshops: " << cs.current_working_workshop_count << " / " << cs.workshop_count << endl;
+            cout << "1. Start workshop" << endl;
+            cout << "2. Stop workshop" << endl;
+
+            int cs_action;
+            cout << "Choose action: ";
+            if (!(cin >> cs_action))
+            {
+                cout << "Invalid input!" << endl;
+                clear();
+                break;
+            }
+            if (cs_action == 1) {
+                cs.start_workshop();
+            }
+            else if (cs_action == 2) {
+                cs.stop_workshop();
             }
             else {
-                cout << "No compressor station available to modify. Please add a CS first." << endl;
+                cout << "Invalid action!" << endl;
             }
+            clear();
             break;
-
+        }
         case 6:
             cout << "\n=== Saving Data ===" << endl;
             if (pipe.km_mark != "") {
-                pipe.save_to_file();
+                save_to_file(pipe, cs);
             }
             else {
                 cout << "No pipe data to save" << endl;
             }
 
             if (cs.name != "") {
-                cs.save_to_file();
+                save_to_file(pipe, cs);
             }
             else {
                 cout << "No compressor station data to save" << endl;
@@ -279,8 +275,8 @@ int main() {
 
         case 7:
             cout << "\n=== Loading Data ===" << endl;
-            pipe.load_from_file("pipe.txt");
-            cs.load_from_file("CS.txt");
+            pipe.load_from_file("data.txt");
+            cs.load_from_file("data.txt");
             cout << "Data loaded successfully!" << endl;
             break;
 
