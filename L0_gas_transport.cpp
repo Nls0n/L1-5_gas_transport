@@ -115,19 +115,37 @@ void stop_workshop(CompressorStation& cs) {
 void save_to_file(const Pipe& pipe, const CompressorStation& cs) {
     ofstream out("data.txt");
     if (out.is_open()) {
-        out << "P 1" << endl; 
-        out << pipe.km_mark << endl;
-        out << pipe.length << endl;
-        out << pipe.diameter << endl;
-        out << pipe.is_in_repair << endl;
-        out << "C 1" << endl;
-        out << cs.name << endl;
-        out << cs.workshop_count << endl;
-        out << cs.current_working_workshop_count << endl;
-        out << cs.station_cls << endl;
+        bool has_pipe = (pipe.km_mark != "");
+        bool has_cs = (cs.name != "");
+        
+        if (has_pipe) {
+            out << "P 1" << endl;  
+            out << pipe.km_mark << endl;
+            out << pipe.length << endl;
+            out << pipe.diameter << endl;
+            out << pipe.is_in_repair << endl;
+        }
+        
+        if (has_cs) {
+            out << "C 1" << endl;  
+            out << cs.name << endl;
+            out << cs.workshop_count << endl;
+            out << cs.current_working_workshop_count << endl;
+            out << cs.station_cls << endl;
+        }
         
         out.close();
         cout << "Data saved to file" << endl;
+        
+        if (has_pipe && has_cs) {
+            cout << "Saved: Pipe and Compressor Station" << endl;
+        } else if (has_pipe) {
+            cout << "Saved: Pipe only" << endl;
+        } else if (has_cs) {
+            cout << "Saved: Compressor Station only" << endl;
+        } else {
+            cout << "No data to save" << endl;
+        }
     } else {
         cout << "Error opening file for writing" << endl;
     }
@@ -145,7 +163,7 @@ void load_from_file(const string& filename, Pipe& pipe, CompressorStation& cs) {
     int count;
     
     while (file >> type >> count) {
-        file.ignore(numeric_limits<streamsize>::max(), '\n'); // jump to next line 
+        file.ignore(numeric_limits<streamsize>::max(), '\n'); 
         
         if (type == "P") {
             for (int i = 0; i < count; i++) {
@@ -154,6 +172,7 @@ void load_from_file(const string& filename, Pipe& pipe, CompressorStation& cs) {
                 file >> pipe.diameter;
                 file >> pipe.is_in_repair;
                 file.ignore(numeric_limits<streamsize>::max(), '\n');
+                cout << "Pipe data loaded" << endl;
             }
         } 
         else if (type == "C") {
@@ -163,6 +182,7 @@ void load_from_file(const string& filename, Pipe& pipe, CompressorStation& cs) {
                 file >> cs.current_working_workshop_count;
                 file >> cs.station_cls;
                 file.ignore(numeric_limits<streamsize>::max(), '\n');
+                cout << "Compressor Station data loaded" << endl;
             }
         }
     }
@@ -267,13 +287,12 @@ int main() {
         }
         case 6:
             cout << "\n=== Saving Data ===" << endl;
-            if (pipe.km_mark != "" && cs.name != "") {
+            if (pipe.km_mark != "" || cs.name != "") {
                 save_to_file(pipe, cs);
             } else {
-                cout << "Both pipe and compressor station data are required to save" << endl;
+                cout << "No data available to save" << endl;
             }
             break;
-
         case 7:
             cout << "\n=== Loading Data ===" << endl;
             load_from_file("data.txt", pipe, cs);
