@@ -112,12 +112,10 @@ void stop_workshop(CompressorStation& cs) {
 }
 
 
-void save_to_file(const Pipe& pipe, const CompressorStation& cs) {
+void save_to_file(const Pipe& pipe) {
     ofstream out("data.txt");
     if (out.is_open()) {
         bool has_pipe = (pipe.km_mark != "");
-        bool has_cs = (cs.name != "");
-        
         if (has_pipe) {
             out << "P 1" << endl;  
             out << pipe.km_mark << endl;
@@ -125,7 +123,19 @@ void save_to_file(const Pipe& pipe, const CompressorStation& cs) {
             out << pipe.diameter << endl;
             out << pipe.is_in_repair << endl;
         }
-        
+        cout << "Pipe data saved to file" << endl;
+        out.close()
+    }
+    else {
+        cout << "Error with opening file" << endl;
+    }
+}
+
+
+void save_to_file(const CompressorStation& cs) {
+    ofstream out("data.txt");
+    if (out.is_open()) {
+        bool has_cs = (cs.name != "");
         if (has_cs) {
             out << "C 1" << endl;  
             out << cs.name << endl;
@@ -133,23 +143,14 @@ void save_to_file(const Pipe& pipe, const CompressorStation& cs) {
             out << cs.current_working_workshop_count << endl;
             out << cs.station_cls << endl;
         }
-        
+        cout << "CS data saved to file" << endl;
         out.close();
-        cout << "Data saved to file" << endl;
-        
-        if (has_pipe && has_cs) {
-            cout << "Saved: Pipe and Compressor Station" << endl;
-        } else if (has_pipe) {
-            cout << "Saved: Pipe only" << endl;
-        } else if (has_cs) {
-            cout << "Saved: Compressor Station only" << endl;
-        } else {
-            cout << "No data to save" << endl;
-        }
-    } else {
-        cout << "Error opening file for writing" << endl;
+    }
+    else {
+        cout << "Error with opening file" << endl;
     }
 }
+
 
 void load_from_file(const string& filename, Pipe& pipe, CompressorStation& cs) {
     ifstream file(filename);
@@ -288,7 +289,8 @@ int main() {
         case 6:
             cout << "\n=== Saving Data ===" << endl;
             if (pipe.km_mark != "" || cs.name != "") {
-                save_to_file(pipe, cs);
+                save_to_file(pipe);
+                save_to_file(cs);
             } else {
                 cout << "No data available to save" << endl;
             }
