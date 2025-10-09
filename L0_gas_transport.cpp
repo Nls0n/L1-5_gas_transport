@@ -10,18 +10,11 @@ void clear() {
     cin.ignore(numeric_limits<streamsize>::max(), '\n');
 }
 
-void float_input(float& var) {
+template<typename T>
+void input_positive(T& var) {
     while (!(cin >> var) || var <= 0) {
         clear();
-        cout << "Invalid input. Enter positive float number: ";
-    }
-    clear();
-}
-
-void int_input(int& var) {
-    while (!(cin >> var) || var <= 0) {
-        clear();
-        cout << "Invalid input. Enter positive int number: ";
+        cout << "Invalid input. Enter positive number: ";
     }
     clear();
 }
@@ -39,9 +32,9 @@ void read_from_console(Pipe& pipe) {
     cout << "Input kilometers mark (name): ";
     getline(cin, pipe.km_mark);
     cout << "Input pipe length: ";
-    float_input(pipe.length);
+    input_positive(pipe.length);
     cout << "Input pipe diameter: ";
-    int_input(pipe.diameter);
+    input_positive(pipe.diameter);
     cout << "Input is_in_repair status: ";
     while (!(cin >> pipe.is_in_repair)) {
         clear();
@@ -62,15 +55,6 @@ void change_status(Pipe& pipe) {
     cout << "Current status: " << pipe.is_in_repair << endl;
 }
 
-void load_from_file(string filename, Pipe& pipe) {
-    ifstream file(filename);
-    getline(file, pipe.km_mark);
-    file >> pipe.length;
-    file >> pipe.diameter;
-    file >> pipe.is_in_repair;
-    file.close();
-}
-
 
 struct CompressorStation {
     string name;
@@ -85,21 +69,19 @@ void read_from_console(CompressorStation& cs) {
     cout << "Input CS name: ";
     getline(cin, cs.name);
     cout << "Input workshop_count: ";
-    int_input(cs.workshop_count);
+    input_positive(cs.workshop_count);
+    
     cout << "Input current_working_workshop_count: ";
-    while (true) {
-        int_input(cs.current_working_workshop_count);
+    do {
+        input_positive(cs.current_working_workshop_count);
         if (cs.current_working_workshop_count > cs.workshop_count) {
             cout << "current_working_workshop_count must be less or equal to workshop_count, try again" << endl;
             cout << "Input current_working_workshop_count: ";
-            continue;
         }
-        else {
-            break;
-        }
-    }
+    } while (cs.current_working_workshop_count > cs.workshop_count);
+    
     cout << "Input station_cls ";
-    float_input(cs.station_cls);
+    input_positive(cs.station_cls);
 }
 
 void write_to_console(CompressorStation& cs) {
@@ -129,7 +111,29 @@ void stop_workshop(CompressorStation& cs) {
     }
 }
 
-void load_from_file(string filename, CompressorStation& cs) {
+
+void save_to_file(const Pipe& pipe, const CompressorStation& cs) {
+    ofstream out("data.txt");
+    if (out.is_open()) {
+        out << "P 1" << endl; 
+        out << pipe.km_mark << endl;
+        out << pipe.length << endl;
+        out << pipe.diameter << endl;
+        out << pipe.is_in_repair << endl;
+        out << "C 1" << endl;
+        out << cs.name << endl;
+        out << cs.workshop_count << endl;
+        out << cs.current_working_workshop_count << endl;
+        out << cs.station_cls << endl;
+        
+        out.close();
+        cout << "Data saved to file" << endl;
+    } else {
+        cout << "Error opening file for writing" << endl;
+    }
+}
+
+void load_from_file(const string& filename, Pipe& pipe, CompressorStation& cs) {
     ifstream file(filename);
     if (!file.is_open()) {
         cout << "Error opening file " << filename << endl;
@@ -137,34 +141,34 @@ void load_from_file(string filename, CompressorStation& cs) {
     }
 
     string line;
-    for (int i = 0; i < 4; i++) {
-        getline(file, line);
+    string type;
+    int count;
+    
+    while (file >> type >> count) {
+        file.ignore(numeric_limits<streamsize>::max(), '\n'); // jump to next line 
+        
+        if (type == "P") {
+            for (int i = 0; i < count; i++) {
+                getline(file, pipe.km_mark);
+                file >> pipe.length;
+                file >> pipe.diameter;
+                file >> pipe.is_in_repair;
+                file.ignore(numeric_limits<streamsize>::max(), '\n');
+            }
+        } 
+        else if (type == "C") {
+            for (int i = 0; i < count; i++) {
+                getline(file, cs.name);
+                file >> cs.workshop_count;
+                file >> cs.current_working_workshop_count;
+                file >> cs.station_cls;
+                file.ignore(numeric_limits<streamsize>::max(), '\n');
+            }
+        }
     }
-    getline(file, cs.name);  
-    file >> cs.workshop_count;
-    file >> cs.current_working_workshop_count;
-    file >> cs.station_cls;
-
+    
     file.close();
-    cout << "CS data loaded from file " << filename << endl;
-}
-
-void save_to_file(Pipe pipe, CompressorStation& cs) {
-    ofstream out;
-    out.open("data.txt");
-    if (out.is_open()) {
-        out << pipe.km_mark << endl;
-        out << pipe.length << endl;
-        out << pipe.diameter << endl;
-        out << pipe.is_in_repair << endl;
-        out << cs.name << endl;
-        out << cs.workshop_count << endl;
-        out << cs.current_working_workshop_count << endl;
-        out << cs.station_cls << endl;
-
-    }
-    out.close();
-    cout << "data saved to file" << endl;
+    cout << "Data loaded from file " << filename << endl;
 }
 
 int main() {
@@ -209,7 +213,7 @@ int main() {
             }
             else {
                 cout << "No pipe data available" << endl;
-            }
+            }    
 
             if (cs.name != "") {
                 cout << "\n--- Compressor Station ---" << endl;
@@ -263,31 +267,22 @@ int main() {
         }
         case 6:
             cout << "\n=== Saving Data ===" << endl;
-            if (pipe.km_mark != "") {
+            if (pipe.km_mark != "" && cs.name != "") {
                 save_to_file(pipe, cs);
-            }
-            else {
-                cout << "No pipe data to save" << endl;
-            }
-
-            if (cs.name != "") {
-                save_to_file(pipe, cs);
-            }
-            else {
-                cout << "No compressor station data to save" << endl;
+            } else {
+                cout << "Both pipe and compressor station data are required to save" << endl;
             }
             break;
 
         case 7:
             cout << "\n=== Loading Data ===" << endl;
-            load_from_file("data.txt", pipe);
-            load_from_file("data.txt", cs);
+            load_from_file("data.txt", pipe, cs);
             cout << "Data loaded successfully!" << endl;
             break;
 
-        case 0:
-            cout << "Exiting program. Goodbye!" << endl;
-            return 0;
+            case 0:
+                cout << "Exiting program. Goodbye!" << endl;
+                return 0;
 
         default:
             cout << "Input is incorrect. Please try digits in range [0-7]" << endl;
