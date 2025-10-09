@@ -111,29 +111,28 @@ void stop_workshop(CompressorStation& cs) {
     }
 }
 
-
 void save_to_file(const Pipe& pipe) {
-    ofstream out("data.txt");
-    if (out.is_open()) {
-        bool has_pipe = (pipe.km_mark != "");
-        if (has_pipe) {
-            out << "P 1" << endl;  
-            out << pipe.km_mark << endl;
-            out << pipe.length << endl;
-            out << pipe.diameter << endl;
-            out << pipe.is_in_repair << endl;
+        ofstream out("data.txt");
+        if (out.is_open()) {
+            bool has_pipe = (pipe.km_mark != "");
+            if (has_pipe) {
+                out << "P 1" << endl;
+                out << pipe.km_mark << endl;
+                out << pipe.length << endl;
+                out << pipe.diameter << endl;
+                out << pipe.is_in_repair << endl;
+            }
+            cout << "Pipe data saved to file" << endl;
+            out.close()
         }
-        cout << "Pipe data saved to file" << endl;
-        out.close()
-    }
-    else {
-        cout << "Error with opening file" << endl;
-    }
+        else {
+            cout << "Error with opening file" << endl;
+        }
 }
 
 
-void save_to_file(const CompressorStation& cs) {
-    ofstream out("data.txt");
+void save_to_file(const CompressorStation& cs) { 
+    ofstream out("data.txt", std::ios::app);
     if (out.is_open()) {
         bool has_cs = (cs.name != "");
         if (has_cs) {
