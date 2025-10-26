@@ -2,6 +2,7 @@
 #include <string>
 #include <fstream>
 #include <limits>
+#include <vector>
 
 using namespace std;
 
@@ -20,181 +21,177 @@ void input_positive(T& var) {
 }
 
 
-struct Pipe {
-    string km_mark;
-    float length; // km
-    int diameter; // mm
-    bool is_in_repair;
-};
-void read_from_console(Pipe& pipe) {
-    string input;
+class Pipe {
+    private:
+        string km_mark;
+        int id;
+        float length; // km
+        int diameter; // mm
+        bool is_in_repair;
+    public:
+        void read_from_console() {
+            string input;
 
-    cout << "Input kilometers mark (name): ";
-    getline(cin, pipe.km_mark);
-    cout << "Input pipe length: ";
-    input_positive(pipe.length);
-    cout << "Input pipe diameter: ";
-    input_positive(pipe.diameter);
-    cout << "Input is_in_repair status: ";
-    while (!(cin >> pipe.is_in_repair)) {
-        clear();
-        cout << "Invalid input. Enter 1 or 0: ";
-    }
-    cin.ignore(numeric_limits<streamsize>::max(), '\n');
-}
-
-void write_to_console(Pipe& pipe) {
-    cout << "Pipe km_mark: " << pipe.km_mark << endl;
-    cout << "Pipe length (km): " << pipe.length << endl;
-    cout << "Pipe diameter (mm): " << pipe.diameter << endl;
-    cout << "Pipe is_in_repair: " << pipe.is_in_repair << endl;
-}
-
-void change_status(Pipe& pipe) {
-    pipe.is_in_repair = !pipe.is_in_repair;
-    cout << "Current status: " << pipe.is_in_repair << endl;
-}
-
-
-struct CompressorStation {
-    string name;
-    int workshop_count;
-    int current_working_workshop_count;
-    float station_cls;
-};
-
-void read_from_console(CompressorStation& cs) {
-    string input;
-
-    cout << "Input CS name: ";
-    getline(cin, cs.name);
-    cout << "Input workshop_count: ";
-    input_positive(cs.workshop_count);
-    
-    cout << "Input current_working_workshop_count: ";
-    do {
-        input_positive(cs.current_working_workshop_count);
-        if (cs.current_working_workshop_count > cs.workshop_count) {
-            cout << "current_working_workshop_count must be less or equal to workshop_count, try again" << endl;
-            cout << "Input current_working_workshop_count: ";
+            cout << "Input kilometers mark (name): ";
+            getline(cin, km_mark);
+            cout << "Input pipe length: ";
+            input_positive(length);
+            cout << "Input pipe diameter: ";
+            input_positive(diameter);
+            cout << "Input is_in_repair status: ";
+            while (!(cin >> is_in_repair)) {
+                clear();
+                cout << "Invalid input. Enter 1 or 0: ";
+            }
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
         }
-    } while (cs.current_working_workshop_count > cs.workshop_count);
-    
-    cout << "Input station_cls ";
-    input_positive(cs.station_cls);
-}
 
-void write_to_console(CompressorStation& cs) {
-    cout << "CS name: " << cs.name << endl;
-    cout << "CS workshop_count: " << cs.workshop_count << endl;
-    cout << "CS current_working_workshop_count: " << cs.current_working_workshop_count << endl;
-    cout << "CS station_cls: " << cs.station_cls << endl;
-}
+        void set_id(const vector<Pipe>& pipes){
+            id >> pipes.size();
+        }
 
-void start_workshop(CompressorStation& cs) {
-    if (cs.current_working_workshop_count < cs.workshop_count) {
-        cs.current_working_workshop_count++;
-        cout << "Workshop started. Current working: " << cs.current_working_workshop_count << endl;
-    }
-    else {
-        cout << "Cannot start more workshops. All " << cs.workshop_count << " workshops are already working." << endl;
-    }
-}
+        void write_to_console() {
+            cout << "Pipe id:" << id << endl;
+            cout << "Pipe km_mark: " << km_mark << endl;
+            cout << "Pipe length (km): " << length << endl;
+            cout << "Pipe diameter (mm): " << diameter << endl;
+            cout << "Pipe is_in_repair: " << is_in_repair << endl;
+        }
 
-void stop_workshop(CompressorStation& cs) {
-    if (cs.current_working_workshop_count > 0) {
-        cs.current_working_workshop_count--;
-        cout << "Workshop stopped. Current working: " << cs.current_working_workshop_count << endl;
-    }
-    else {
-        cout << "There are no available workshops to stop." << endl;
-    }
-}
+        bool check_name() {
+            return km_mark != "";
+        }
 
-void save_to_file(const Pipe& pipe) {
+        void change_status() {
+        is_in_repair = !is_in_repair;
+        cout << "Current status: " << is_in_repair << endl;
+    }
+
+    void save_to_file() {
         ofstream out("data.txt");
         if (out.is_open()) {
-            bool has_pipe = (pipe.km_mark != "");
-            if (has_pipe) {
-                out << "P 1" << endl;
-                out << pipe.km_mark << endl;
-                out << pipe.length << endl;
-                out << pipe.diameter << endl;
-                out << pipe.is_in_repair << endl;
+            if (check_name()) {
+                out << id << endl;
+                out << km_mark << endl;
+                out << length << endl;
+                out << diameter << endl;
+                out << is_in_repair << endl;
             }
             cout << "Pipe data saved to file" << endl;
-            out.close()
+            out.close();
         }
         else {
             cout << "Error with opening file" << endl;
         }
-}
-
-
-void save_to_file(const CompressorStation& cs) { 
-    ofstream out("data.txt", std::ios::app);
-    if (out.is_open()) {
-        bool has_cs = (cs.name != "");
-        if (has_cs) {
-            out << "C 1" << endl;  
-            out << cs.name << endl;
-            out << cs.workshop_count << endl;
-            out << cs.current_working_workshop_count << endl;
-            out << cs.station_cls << endl;
+    }
+    void load_from_file(ifstream& file) {
+        if (file.is_open()){
+            file >> id;
+            file >> km_mark;
+            file >> length;
+            file >> diameter;
+            file >> is_in_repair;
         }
-        cout << "CS data saved to file" << endl;
-        out.close();
     }
-    else {
-        cout << "Error with opening file" << endl;
-    }
-}
+};
 
-
-void load_from_file(const string& filename, Pipe& pipe, CompressorStation& cs) {
+void load_from_file(string filename, vector<Pipe>& pipes, const vector<CompressorStation>& CSes) {
     ifstream file(filename);
-    if (!file.is_open()) {
-        cout << "Error opening file " << filename << endl;
-        return;
-    }
-
-    string line;
-    string type;
-    int count;
+    Pipe pipe;
     
-    while (file >> type >> count) {
-        file.ignore(numeric_limits<streamsize>::max(), '\n'); 
-        
-        if (type == "P") {
-            for (int i = 0; i < count; i++) {
-                getline(file, pipe.km_mark);
-                file >> pipe.length;
-                file >> pipe.diameter;
-                file >> pipe.is_in_repair;
-                file.ignore(numeric_limits<streamsize>::max(), '\n');
-                cout << "Pipe data loaded" << endl;
+}
+
+
+class CompressorStation {
+    private:
+        string name;
+        int workshop_count;
+        int current_working_workshop_count;
+        int id;
+        float station_cls;
+
+    public:
+        bool check_name() {
+            return name != "";
+        }
+        void read_from_console() {
+            string input;
+
+            cout << "Input CS name: ";
+            getline(cin, name);
+            cout << "Input workshop_count: ";
+            input_positive(workshop_count);
+            
+            cout << "Input current_working_workshop_count: ";
+            do {
+                input_positive(current_working_workshop_count);
+                if (current_working_workshop_count > workshop_count) {
+                    cout << "current_working_workshop_count must be less or equal to workshop_count, try again" << endl;
+                    cout << "Input current_working_workshop_count: ";
+                }
+            } while (current_working_workshop_count > workshop_count);
+            
+            cout << "Input station_cls ";
+            input_positive(station_cls);
+        }
+
+        void write_to_console() {
+            cout << "CS name: " << name << endl;
+            cout << "CS workshop_count: " << workshop_count << endl;
+            cout << "CS current_working_workshop_count: " << current_working_workshop_count << endl;
+            cout << "CS station_cls: " << station_cls << endl;
+        }
+
+        void start_workshop() {
+            if (current_working_workshop_count < workshop_count) {
+                current_working_workshop_count++;
+                cout << "Workshop started. Current working: " << current_working_workshop_count << endl;
             }
-        } 
-        else if (type == "C") {
-            for (int i = 0; i < count; i++) {
-                getline(file, cs.name);
-                file >> cs.workshop_count;
-                file >> cs.current_working_workshop_count;
-                file >> cs.station_cls;
-                file.ignore(numeric_limits<streamsize>::max(), '\n');
-                cout << "Compressor Station data loaded" << endl;
+            else {
+                cout << "Cannot start more workshops. All " << workshop_count << " workshops are already working." << endl;
             }
         }
-    }
-    
-    file.close();
-    cout << "Data loaded from file " << filename << endl;
-}
+
+        void stop_workshop() {
+            if (current_working_workshop_count > 0) {
+                current_working_workshop_count--;
+                cout << "Workshop stopped. Current working: " << current_working_workshop_count << endl;
+            }
+            else {
+                cout << "There are no available workshops to stop." << endl;
+            }
+        }
+
+
+
+        void save_to_file() { 
+            ofstream out("data.txt", std::ios::app);
+            if (out.is_open()) {
+                if (check_name()) {
+                    out << id << endl;  
+                    out << name << endl;
+                    out << workshop_count << endl;
+                    out << current_working_workshop_count << endl;
+                    out << station_cls << endl;
+                }
+                cout << "CS data saved to file" << endl;
+                out.close();
+            }
+            else {
+                cout << "Error with opening file" << endl;
+            }
+        }
+};
+
+
+
 
 int main() {
     Pipe pipe;
-    CompressorStation cs;
+    CompressorStation CS;
     int user_input;
+    vector<Pipe> pipes;
+    vector<CompressorStation> CSes;
 
     while (true) {
         cout << "1. Add Pipe" << endl;
