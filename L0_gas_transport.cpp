@@ -28,10 +28,10 @@ class Pipe {
     int diameter; // mm
     bool is_in_repair;
     int id;
+    string input;
+
     public:
     void read_from_console() {
-        string input;
-
         cout << "Input kilometers mark (name): ";
         getline(cin, km_mark);
         cout << "Input pipe length: ";
@@ -43,15 +43,15 @@ class Pipe {
             clear();
             cout << "Invalid input. Enter 1 or 0: ";
         }
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
     }
     bool validate_km_mark() {
-        return km_mark != "";
+        return (km_mark != "");
     }
-    bool assign_id(vector<Pipe> pipes) {
+    void assign_id(vector<Pipe> pipes) {
         id = pipes.size() + 1;
     }
     void write_to_console() {
+        cout << "Pipe id: " << id << endl;
         cout << "Pipe km_mark: " << km_mark << endl;
         cout << "Pipe length (km): " << length << endl;
         cout << "Pipe diameter (mm): " << diameter << endl;
@@ -62,17 +62,16 @@ class Pipe {
         is_in_repair = !is_in_repair;
         cout << "Current status: " << is_in_repair << endl;
     }
-    void save_to_file() {
-        ofstream out("data.txt");
+    void save_to_file(string filename) {
+        ofstream out(filename, ios::app);
         if (out.is_open()) {
             bool has_pipe = validate_km_mark();
             if (has_pipe) {
-                out << "P 1" << endl;
+                out << id << endl;
                 out << km_mark << endl;
                 out << length << endl;
                 out << diameter << endl;
                 out << is_in_repair << endl;
-                cout << "Pipe data saved to file" << endl;
                 out.close();
             }
         }
@@ -88,6 +87,7 @@ class CompressorStation {
     int workshop_count;
     int current_working_workshop_count;
     float station_cls;
+    int id;
     public:
 
     void read_from_console() {
@@ -111,7 +111,7 @@ class CompressorStation {
         input_positive(station_cls);
     }
     bool validate_name() {
-        return name != "";
+        return (name != "");
     }
     void write_to_console() {
         cout << "CS name: " << name << endl;
@@ -140,18 +140,19 @@ class CompressorStation {
         }
     }
 
-    void save_to_file(const CompressorStation& cs) { 
-        ofstream out("data.txt", std::ios::app);
+    void save_to_file(string filename) { 
+        ofstream out(filename, std::ios::app);
         if (out.is_open()) {
-            bool has_cs = (cs.name != "");
-            if (has_cs) {
-                out << "C 1" << endl;  
-                out << cs.name << endl;
-                out << cs.workshop_count << endl;
-                out << cs.current_working_workshop_count << endl;
-                out << cs.station_cls << endl;
+            if (validate_name()) {
+                out << id << endl;
+                out << name << endl;
+                out << workshop_count << endl;
+                out << current_working_workshop_count << endl;
+                out << station_cls << endl;
             }
-            cout << "CS data saved to file" << endl;
+            else {
+                cout << "Invalid CS name" << endl;
+            }
             out.close();
         }
         else {
@@ -162,54 +163,32 @@ class CompressorStation {
     void print_workshop_managment() {
         cout << "Current working workshops: " << current_working_workshop_count << " / " << workshop_count << endl;
     }
+
+    void assign_id(vector<CompressorStation> CSes) {
+        id = CSes.size() + 1;
+    }
 };
 
 
-void load_from_file(const string& filename, Pipe& pipe, CompressorStation& cs) {
-    ifstream file(filename);
-    if (!file.is_open()) {
-        cout << "Error opening file " << filename << endl;
-        return;
-    }
-
-    string line;
-    string type;
-    int count;
-    
-    while (file >> type >> count) {
-        file.ignore(numeric_limits<streamsize>::max(), '\n'); 
-        
-        if (type == "P") {
-            for (int i = 0; i < count; i++) {
-                getline(file, pipe.km_mark);
-                file >> pipe.length;
-                file >> pipe.diameter;
-                file >> pipe.is_in_repair;
-                file.ignore(numeric_limits<streamsize>::max(), '\n');
-                cout << "Pipe data loaded" << endl;
-            }
-        } 
-        else if (type == "C") {
-            for (int i = 0; i < count; i++) {
-                getline(file, cs.name);
-                file >> cs.workshop_count;
-                file >> cs.current_working_workshop_count;
-                file >> cs.station_cls;
-                file.ignore(numeric_limits<streamsize>::max(), '\n');
-                cout << "Compressor Station data loaded" << endl;
-            }
-        }
-    }
-    
-    file.close();
+void load_from_file(string filename, vector<Pipe>& pipes, vector<CompressorStation>& CSes) {
     cout << "Data loaded from file " << filename << endl;
+}
+
+void truncate_file(string filename) {
+    fstream clear_file(filename, ios::out);
+    clear_file.close();
 }
 
 int main() {
     Pipe pipe;
-    vector<Pipe> pipes;
     CompressorStation cs;
+    vector<Pipe> pipes;
+    vector<CompressorStation> CSes;
     int user_input;
+    string filename;
+    truncate_file("logs.txt");
+    ofstream logger("logs.txt", ios::app);
+    
 
     while (true) {
         cout << "1. Add Pipe" << endl;
@@ -219,50 +198,61 @@ int main() {
         cout << "5. Manage Compressor Station Workshops" << endl;
         cout << "6. Save Data to Files" << endl;
         cout << "7. Load Data from Files" << endl;
+        cout << "8. Truncate File" << endl;
         cout << "0. Exit" << endl;
-        cout << "Enter command [0-7]: ";
+        cout << "Enter command [0-8]: ";
 
         if (!(cin >> user_input)) {
+            logger << user_input << endl;
             cout << "Invalid input. Please enter a number." << endl;
             clear();
             continue;
         }
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-
+        clear();
         switch (user_input) {
         case 1:
+            logger << user_input << endl;
             cout << "\n=== Adding New Pipe ===" << endl;
-            read_from_console(pipe);
+            pipe.read_from_console();
             pipe.assign_id(pipes);
             pipes.push_back(pipe);
 
             break;
 
         case 2:
+            logger << user_input << endl;
             cout << "\n=== Adding New Compressor Station ===" << endl;
-            read_from_console(cs);
+            cs.read_from_console();
+            cs.assign_id(CSes);
+            CSes.push_back(cs);
             break;
 
         case 3:
+            logger << user_input << endl;
             cout << "\n=== All Objects ===" << endl;
-            if (!pipe.validate_km_mark()) {
-                cout << "\n--- Pipe ---" << endl;
-                write_to_console(pipe);
+            if (pipes.size()) {
+                cout << "\n--- Pipes ---" << endl;
+                for (int i=0; i<pipes.size(); i++) {
+                    pipes[i].write_to_console();
+                }
             }
             else {
-                cout << "No pipe data available" << endl;
+                cout << "No pipes data available" << endl;
             }    
 
-            if (!cs.validate_name()) {
-                cout << "\n--- Compressor Station ---" << endl;
-                write_to_console(cs);
+            if (CSes.size()) {
+                cout << "\n--- Compressor Stations ---" << endl;
+                for (int i = 0; i < CSes.size(); i++) {
+                    CSes[i].write_to_console();
+                }
             }
             else {
-                cout << "No compressor station data available" << endl << endl;
+                cout << "No compressor stations data available" << endl << endl;
             }
             break;
 
         case 4:
+            logger << user_input << endl;
             if (!pipe.validate_km_mark()) {
                 pipe.change_status();
                 cout << "Pipe status changed successfully!" << endl;
@@ -273,7 +263,7 @@ int main() {
             break;
 
         case 5:
-        {
+            logger << user_input << endl;
             if (!cs.validate_name()) {
                 cout << "No compressor station available to modify. Please add a CS first." << endl;
                 break;
@@ -302,28 +292,58 @@ int main() {
             }
             clear();
             break;
-        }
         case 6:
+            logger << user_input << endl;
+            cout << "Enter filename" << endl;
+            getline(cin, filename);
+            clear();
+
             cout << "\n=== Saving Data ===" << endl;
-            if (pipe.validate_km_mark() || cs.validate_name()) {
-                save_to_file(pipe);
-                save_to_file(cs);
+            if (pipes.size()) {
+                ofstream out(filename);
+                out << "P " << pipes.size() << endl;
+                out.close();
+                for (int i = 0; i < pipes.size(); i++) {
+                    pipes[i].save_to_file(filename);
+                }
             } else {
                 cout << "No data available to save" << endl;
             }
+            if (CSes.size()) {
+                ofstream out(filename, ios::app);
+                out << "C " << CSes.size() << endl;
+                out.close();
+                for (int i = 0; i < CSes.size(); i++) {
+                    CSes[i].save_to_file(filename);
+                }
+            }
             break;
         case 7:
+            logger << user_input << endl;
+            cout << "Enter filename" << endl;
+            getline(cin, filename);
             cout << "\n=== Loading Data ===" << endl;
-            load_from_file("data.txt", pipe, cs);
+            load_from_file(filename, pipes, CSes);
             cout << "Data loaded successfully!" << endl;
             break;
 
-            case 0:
-                cout << "Exiting program. Goodbye!" << endl;
-                return 0;
 
+        case 8:
+            logger << user_input << endl;
+            cout << "Enter filename to truncate it" << endl;
+            getline(cin, filename);
+            truncate_file(filename);
+            cout << "Succesfully truncated the file" << endl;
+            break;
+
+            
+        case 0:
+            logger << user_input;
+            cout << "Exiting program. Goodbye!" << endl;
+            return 0;
         default:
-            cout << "Input is incorrect. Please try digits in range [0-7]" << endl;
+            logger << user_input << endl;
+            cout << "Input is incorrect. Please try digits in range [0-8]" << endl;
             clear();
         }
     }
