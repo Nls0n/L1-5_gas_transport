@@ -21,7 +21,6 @@ L0_gas_transport/
 - app.exe                    # Windows executable
 - CompressorStation.cpp      # CS class implementation
 - CompressorStation.h        # CS class header
-- CS.txt                     # CS data file
 - data.txt                   # General data file
 - file_operations.cpp        # File operations implementation
 - file_operations.h          # File operations header
