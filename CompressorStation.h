@@ -20,7 +20,7 @@ public:
     void stop_workshop();
     void save_to_file(std::string filename);
     void print_workshop_managment();
-    void assign_id(std::vector<CompressorStation> CSes);
+    void assign_id(int cs_cnt);
 
     // Геттеры
     int get_id();

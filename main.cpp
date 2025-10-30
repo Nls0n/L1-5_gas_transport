@@ -13,8 +13,9 @@ int main() {
     std::vector<CompressorStation> CSes;
     int user_input;
     std::string filename;
+    int pipe_cnt = 0;
+    int cs_cnt = 0;
     
-    truncate_file("logs.txt");
     write_to_log(0);
 
     while (true) {
@@ -47,7 +48,8 @@ int main() {
             std::cout << "\n=== Adding New Pipe ===" << std::endl;
             Pipe pipe;
             pipe.read_from_console();
-            pipe.assign_id(pipes);
+            pipe.assign_id(pipe_cnt);
+            pipe_cnt++;
             pipes.push_back(pipe);
             std::cout << "Pipe added successfully!" << std::endl;
             break;
@@ -57,7 +59,8 @@ int main() {
             std::cout << "\n=== Adding New Compressor Station ===" << std::endl;
             CompressorStation cs;
             cs.read_from_console();
-            cs.assign_id(CSes);
+            cs.assign_id(cs_cnt);
+            cs_cnt++;
             CSes.push_back(cs);
             std::cout << "Compressor Station added successfully!" << std::endl;
             break;

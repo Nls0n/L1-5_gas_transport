@@ -75,8 +75,8 @@ void CompressorStation::print_workshop_managment() {
     std::cout << "Current working workshops: " << current_working_workshop_count << " / " << workshop_count << std::endl;
 }
 
-void CompressorStation::assign_id(std::vector<CompressorStation> CSes) {
-    id = CSes.size() + 1;
+void CompressorStation::assign_id(int cs_cnt) {
+    id = cs_cnt + 1;
 }
 
 int CompressorStation::get_id() { return id; }

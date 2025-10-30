@@ -22,8 +22,8 @@ bool Pipe::validate_km_mark() {
     return (km_mark != "");
 }
 
-void Pipe::assign_id(std::vector<Pipe> pipes) {
-    id = pipes.size() + 1;
+void Pipe::assign_id(int pipe_cnt) {
+    id = pipe_cnt + 1;
 }
 
 void Pipe::write_to_console() {

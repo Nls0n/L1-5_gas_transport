@@ -15,7 +15,7 @@ private:
 public:
     void read_from_console();
     bool validate_km_mark();
-    void assign_id(std::vector<Pipe> pipes);
+    void assign_id(int pipes_cnt);
     void write_to_console();
     void change_status();
     void save_to_file(std::string filename);
