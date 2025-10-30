@@ -4,7 +4,6 @@
 #include <algorithm>
 #include <set>
 
-// Функции поиска для пакетного редактирования
 std::vector<int> search_pipes_by_name_for_batch(std::vector<Pipe>& pipes) {
     std::string search_name;
     std::cout << "Enter pipe name to search: ";
@@ -39,7 +38,6 @@ std::vector<int> search_pipes_by_repair_status_for_batch(std::vector<Pipe>& pipe
     return found_ids;
 }
 
-// Функции пакетного редактирования
 void batch_change_repair_status(std::vector<Pipe>& pipes, std::vector<int> pipe_ids) {
     int new_status;
     std::cout << "Set new repair status (0 - not in repair, 1 - in repair): ";
@@ -90,7 +88,6 @@ void batch_delete_pipes(std::vector<Pipe>& pipes, std::vector<int> pipe_ids) {
         return;
     }
     
-    // Удаляем трубы в обратном порядке чтобы не сломать индексы
     std::sort(pipe_ids.rbegin(), pipe_ids.rend());
     int deleted_count = 0;
     
@@ -106,7 +103,6 @@ void batch_delete_pipes(std::vector<Pipe>& pipes, std::vector<int> pipe_ids) {
     std::cout << "Deleted " << deleted_count << " pipes" << std::endl;
 }
 
-// Основная функция пакетного редактирования
 void batch_edit_pipes(std::vector<Pipe>& pipes) {
     if (pipes.empty()) {
         std::cout << "No pipes available for batch editing." << std::endl;
@@ -134,7 +130,6 @@ void batch_edit_pipes(std::vector<Pipe>& pipes) {
             selected_ids = search_pipes_by_repair_status_for_batch(pipes);
             break;
         case 3:
-            // Выбираем все трубы
             for (int i = 0; i < pipes.size(); i++) {
                 selected_ids.push_back(pipes[i].get_id());
             }
@@ -152,7 +147,6 @@ void batch_edit_pipes(std::vector<Pipe>& pipes) {
         return;
     }
     
-    // Выбор подмножества
     std::cout << "\nFound " << selected_ids.size() << " pipes." << std::endl;
     std::cout << "1. Edit all found pipes" << std::endl;
     std::cout << "2. Select specific pipes" << std::endl;
@@ -190,7 +184,6 @@ void batch_edit_pipes(std::vector<Pipe>& pipes) {
         return;
     }
     
-    // Выбор действия
     std::cout << "\nSelected " << final_selection.size() << " pipes for editing." << std::endl;
     std::cout << "1. Change repair status" << std::endl;
     std::cout << "2. Change diameter" << std::endl;
@@ -220,7 +213,6 @@ void batch_edit_pipes(std::vector<Pipe>& pipes) {
     }
 }
 
-// Старые функции поиска (для просмотра)
 void search_pipes_by_name(std::vector<Pipe>& pipes) {
     std::string search_name;
     std::cout << "Enter pipe name to search: ";

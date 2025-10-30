@@ -6,7 +6,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
-#include <fstream>  // Добавьте эту строку
+#include <fstream>  
 
 int main() {
     std::vector<Pipe> pipes;
@@ -18,7 +18,7 @@ int main() {
     write_to_log(0);
 
     while (true) {
-        std::cout << "\n=== Gas Transmission Network Manager ===" << std::endl;
+        std::cout << "\n=== Gas Network Manager ===" << std::endl;
         std::cout << "1. Add Pipe" << std::endl;
         std::cout << "2. Add Compressor Station" << std::endl;
         std::cout << "3. View All Objects" << std::endl;
@@ -218,7 +218,6 @@ int main() {
             break;
 
         case 0:
-            write_to_log(0);
             std::cout << "Exiting program. Goodbye!" << std::endl;
             return 0;
             
