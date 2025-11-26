@@ -1,204 +1,204 @@
-#include "Pipe.h"
-#include "CompressorStation.h"
-#include "search.h"
-#include "file_operations.h"
-#include "utils.h"
 #include <iostream>
-#include <vector>
 #include <string>
-#include <fstream>  
+#include <fstream>
+#include <limits>
+#include <vector>
+#include <algorithm>
+#include <set>
+#include <unordered_map>
+#include <chrono>
+#include <iomanip>
+#include <sstream>
+
+#include "pipe.h"
+#include "compressor_station.h"
+#include "utils.h"
+#include "search_utils.h"
+
+using namespace std;
 
 int main() {
-    std::vector<Pipe> pipes;
-    std::vector<CompressorStation> CSes;
+    unordered_map<int, Pipe> pipes;
+    unordered_map<int, CompressorStation> CSes;
     int user_input;
-    std::string filename;
+    string filename;
     
-    truncate_file("logs.txt");
-    write_to_log(0);
-
+    initialize_logging();
+    
     while (true) {
-        std::cout << "\n=== Gas Network Manager ===" << std::endl;
-        std::cout << "1. Add Pipe" << std::endl;
-        std::cout << "2. Add Compressor Station" << std::endl;
-        std::cout << "3. View All Objects" << std::endl;
-        std::cout << "4. Change Pipe Status" << std::endl;
-        std::cout << "5. Manage Compressor Station Workshops" << std::endl;
-        std::cout << "6. Save Data to Files" << std::endl;
-        std::cout << "7. Load Data from Files" << std::endl;
-        std::cout << "8. Search Objects" << std::endl;
-        std::cout << "9. Batch Edit Pipes" << std::endl;
-        std::cout << "10. Truncate File" << std::endl;
-        std::cout << "0. Exit" << std::endl;
-        std::cout << "Enter command [0-10]: ";
+        cout << "\n=== Gas Transmission Network Manager ===" << endl;
+        cout << "1. Add Pipe" << endl;
+        cout << "2. Add Compressor Station" << endl;
+        cout << "3. View All Objects" << endl;
+        cout << "4. Change Pipe Status" << endl;
+        cout << "5. Manage Compressor Station Workshops" << endl;
+        cout << "6. Save Data to Files" << endl;
+        cout << "7. Load Data from Files" << endl;
+        cout << "8. Search Objects" << endl;
+        cout << "9. Batch Edit Pipes" << endl;
+        cout << "10. Truncate File" << endl;
+        cout << "0. Exit" << endl;
+        cout << "Enter command [0-10]: ";
 
-        if (!(std::cin >> user_input)) {
-            std::cout << "Invalid input. Please enter a number." << std::endl;
-            write_to_log(-1);
+        if (!(cin >> user_input)) {
+            cout << "Invalid input. Please enter a number." << endl;
             clear();
             continue;
         }
         
-        write_to_log(user_input);
+        write_to_log(to_string(user_input));
         clear();
         
         switch (user_input) {
         case 1: {
-            std::cout << "\n=== Adding New Pipe ===" << std::endl;
             Pipe pipe;
             pipe.read_from_console();
             pipe.assign_id(pipes);
-            pipes.push_back(pipe);
-            std::cout << "Pipe added successfully!" << std::endl;
+            pipes[pipe.get_id()] = pipe;
+            cout << "Pipe added successfully!" << endl;
             break;
         }
 
         case 2: {
-            std::cout << "\n=== Adding New Compressor Station ===" << std::endl;
             CompressorStation cs;
             cs.read_from_console();
             cs.assign_id(CSes);
-            CSes.push_back(cs);
-            std::cout << "Compressor Station added successfully!" << std::endl;
+            CSes[cs.get_id()] = cs;
+            cout << "Compressor Station added successfully!" << endl;
             break;
         }
 
         case 3:
-            std::cout << "\n=== All Objects ===" << std::endl;
+            cout << "\n=== All Objects ===" << endl;
             if (pipes.empty()) {
-                std::cout << "No pipes data available" << std::endl;
+                cout << "No pipes data available" << endl;
             } else {
-                std::cout << "\n--- Pipes (" << pipes.size() << ") ---" << std::endl;
-                for (int i = 0; i < pipes.size(); i++) {
-                    pipes[i].write_to_console();
+                cout << "\n--- Pipes (" << pipes.size() << ") ---" << endl;
+                for (const auto& pair : pipes) {
+                    pair.second.write_to_console();
                 }
             }
 
             if (CSes.empty()) {
-                std::cout << "No compressor stations data available" << std::endl;
+                cout << "No compressor stations data available" << endl;
             } else {
-                std::cout << "\n--- Compressor Stations (" << CSes.size() << ") ---" << std::endl;
-                for (int i = 0; i < CSes.size(); i++) {
-                    CSes[i].write_to_console();
+                cout << "\n--- Compressor Stations (" << CSes.size() << ") ---" << endl;
+                for (const auto& pair : CSes) {
+                    pair.second.write_to_console();
                 }
             }
             break;
 
         case 4:
             if (pipes.empty()) {
-                std::cout << "No pipe available to modify. Please add a pipe first." << std::endl;
+                cout << "No pipe available to modify. Please add a pipe first." << endl;
                 break;
             }
             
-            std::cout << "Available pipes:" << std::endl;
-            for (int i = 0; i < pipes.size(); i++) {
-                std::cout << "ID: " << pipes[i].get_id() << " - " << pipes[i].get_km_mark() << std::endl;
+            cout << "Available pipes:" << endl;
+            for (const auto& pair : pipes) {
+                cout << "ID: " << pair.first << " - " << pair.second.get_km_mark() << endl;
             }
             
-            std::cout << "Enter pipe ID to change status: ";
+            cout << "Enter pipe ID to change status: ";
             int pipe_id;
-            if (std::cin >> pipe_id) {
-                bool found = false;
-                for (int i = 0; i < pipes.size(); i++) {
-                    if (pipes[i].get_id() == pipe_id) {
-                        pipes[i].change_status();
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) {
-                    std::cout << "Pipe with ID " << pipe_id << " not found!" << std::endl;
+            if (cin >> pipe_id) {
+                write_to_log(to_string(pipe_id));
+                auto it = pipes.find(pipe_id);
+                if (it != pipes.end()) {
+                    it->second.change_status();
+                } else {
+                    cout << "Pipe with ID " << pipe_id << " not found!" << endl;
                 }
             } else {
-                std::cout << "Invalid input!" << std::endl;
+                cout << "Invalid input!" << endl;
             }
             clear();
             break;
 
         case 5:
             if (CSes.empty()) {
-                std::cout << "No compressor station available to modify. Please add a CS first." << std::endl;
+                cout << "No compressor station available to modify. Please add a CS first." << endl;
                 break;
             }
             
-            std::cout << "Available compressor stations:" << std::endl;
-            for (int i = 0; i < CSes.size(); i++) {
-                std::cout << "ID: " << CSes[i].get_id() << " - " << CSes[i].get_name() << std::endl;
+            cout << "Available compressor stations:" << endl;
+            for (const auto& pair : CSes) {
+                cout << "ID: " << pair.first << " - " << pair.second.get_name() << endl;
             }
             
-            std::cout << "Enter CS ID to manage: ";
+            cout << "Enter CS ID to manage: ";
             int cs_id;
-            if (std::cin >> cs_id) {
-                bool found = false;
-                for (int i = 0; i < CSes.size(); i++) {
-                    if (CSes[i].get_id() == cs_id) {
-                        CSes[i].print_workshop_managment();
-                        std::cout << "1. Start workshop" << std::endl;
-                        std::cout << "2. Stop workshop" << std::endl;
+            if (cin >> cs_id) {
+                write_to_log(to_string(cs_id));
+                auto it = CSes.find(cs_id);
+                if (it != CSes.end()) {
+                    it->second.print_workshop_managment();
+                    cout << "1. Start workshop" << endl;
+                    cout << "2. Stop workshop" << endl;
 
-                        int cs_action;
-                        std::cout << "Choose action: ";
-                        if (std::cin >> cs_action) {
-                            if (cs_action == 1) {
-                                CSes[i].start_workshop();
-                            } else if (cs_action == 2) {
-                                CSes[i].stop_workshop();
-                            } else {
-                                std::cout << "Invalid action!" << std::endl;
-                            }
+                    int cs_action;
+                    cout << "Choose action: ";
+                    if (cin >> cs_action) {
+                        write_to_log(to_string(cs_action));
+                        if (cs_action == 1) {
+                            it->second.start_workshop();
+                        } else if (cs_action == 2) {
+                            it->second.stop_workshop();
                         } else {
-                            std::cout << "Invalid input!" << std::endl;
+                            cout << "Invalid action!" << endl;
                         }
-                        found = true;
-                        break;
+                    } else {
+                        cout << "Invalid input!" << endl;
                     }
-                }
-                if (!found) {
-                    std::cout << "CS with ID " << cs_id << " not found!" << std::endl;
+                } else {
+                    cout << "CS with ID " << cs_id << " not found!" << endl;
                 }
             } else {
-                std::cout << "Invalid input!" << std::endl;
+                cout << "Invalid input!" << endl;
             }
             clear();
             break;
 
         case 6:
-            std::cout << "Enter filename: ";
-            std::getline(std::cin, filename);
+            cout << "Enter filename: ";
+            getline(cin, filename);
+            write_to_log(filename);
             
-            std::cout << "\n=== Saving Data ===" << std::endl;
+            cout << "\n=== Saving Data ===" << endl;
             if (pipes.empty() && CSes.empty()) {
-                std::cout << "No data available to save" << std::endl;
+                cout << "No data available to save" << endl;
                 break;
             }
             
             truncate_file(filename);
             
             if (!pipes.empty()) {
-                std::ofstream out(filename, std::ios::app);
-                out << "P " << pipes.size() << std::endl;
+                ofstream out(filename, ios::app);
+                out << "P " << pipes.size() << endl;
                 out.close();
-                for (int i = 0; i < pipes.size(); i++) {
-                    pipes[i].save_to_file(filename);
+                for (const auto& pair : pipes) {
+                    pair.second.save_to_file(filename);
                 }
-                std::cout << "Saved " << pipes.size() << " pipes" << std::endl;
+                cout << "Saved " << pipes.size() << " pipes" << endl;
             }
             
             if (!CSes.empty()) {
-                std::ofstream out(filename, std::ios::app);
-                out << "C " << CSes.size() << std::endl;
+                ofstream out(filename, ios::app);
+                out << "C " << CSes.size() << endl;
                 out.close();
-                for (int i = 0; i < CSes.size(); i++) {
-                    CSes[i].save_to_file(filename);
+                for (const auto& pair : CSes) {
+                    pair.second.save_to_file(filename);
                 }
-                std::cout << "Saved " << CSes.size() << " compressor stations" << std::endl;
+                cout << "Saved " << CSes.size() << " compressor stations" << endl;
             }
             break;
 
         case 7:
-            std::cout << "Enter filename: ";
-            std::getline(std::cin, filename);
-            std::cout << "\n=== Loading Data ===" << std::endl;
+            cout << "Enter filename: ";
+            getline(cin, filename);
+            write_to_log(filename);
+            cout << "\n=== Loading Data ===" << endl;
             load_from_file(filename, pipes, CSes);
             break;
 
@@ -211,18 +211,20 @@ int main() {
             break;
 
         case 10:
-            std::cout << "Enter filename to truncate: ";
-            std::getline(std::cin, filename);
+            cout << "Enter filename to truncate: ";
+            getline(cin, filename);
+            write_to_log(filename);
             truncate_file(filename);
-            std::cout << "Successfully truncated the file" << std::endl;
+            cout << "Successfully truncated the file" << endl;
             break;
 
         case 0:
-            std::cout << "Exiting program. Goodbye!" << std::endl;
+            cout << "Exiting program. Goodbye!" << endl;
+            close_logging();
             return 0;
             
         default:
-            std::cout << "Input is incorrect. Please try digits in range [0-10]" << std::endl;
+            cout << "Input is incorrect. Please try digits in range [0-10]" << endl;
         }
     }
     return 0;
