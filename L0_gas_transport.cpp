@@ -5,8 +5,46 @@
 #include <vector>
 #include <algorithm>
 #include <set>
+#include <unordered_map>
+#include <chrono>
+#include <iomanip>
+#include <sstream>
 
 using namespace std;
+
+// Глобальная переменная для лог-файла
+ofstream log_file;
+string log_filename;
+
+void initialize_logging() {
+    auto now = chrono::system_clock::now();
+    time_t time = chrono::system_clock::to_time_t(now);
+    tm local_time = *localtime(&time);
+    
+    ostringstream filename_stream;
+    filename_stream << "logs_"
+                   << setfill('0') << setw(2) << local_time.tm_mday
+                   << setfill('0') << setw(2) << (local_time.tm_mon + 1)
+                   << (local_time.tm_year + 1900) << "_"
+                   << setfill('0') << setw(2) << local_time.tm_hour
+                   << setfill('0') << setw(2) << local_time.tm_min
+                   << setfill('0') << setw(2) << local_time.tm_sec << ".txt";
+    log_filename = filename_stream.str();
+    
+    log_file.open(log_filename);
+}
+
+void close_logging() {
+    if (log_file.is_open()) {
+        log_file.close();
+    }
+}
+
+void write_to_log(const string& message) {
+    if (log_file.is_open()) {
+        log_file << message << endl;
+    }
+}
 
 void clear() {
     cin.clear();
@@ -34,27 +72,44 @@ public:
     void read_from_console() {
         cout << "Input kilometers mark (name): ";
         getline(cin, km_mark);
+        write_to_log(km_mark);
+        
         cout << "Input pipe length: ";
         input_positive(length);
+        write_to_log(to_string(length));
+        
         cout << "Input pipe diameter: ";
         input_positive(diameter);
+        write_to_log(to_string(diameter));
+        
         cout << "Input is_in_repair status: ";
         while (!(cin >> is_in_repair)) {
             clear();
             cout << "Invalid input. Enter 1 or 0: ";
         }
+        write_to_log(to_string(is_in_repair));
         clear();
     }
 
-    bool validate_km_mark() {
+    bool validate_km_mark() const {
         return (km_mark != "");
     }
 
-    void assign_id(vector<Pipe> pipes) {
-        id = pipes.size() + 1;
+    void assign_id(const unordered_map<int, Pipe>& pipes) {
+        if (pipes.empty()) {
+            id = 1;
+        } else {
+            int max_id = 0;
+            for (const auto& pair : pipes) {
+                if (pair.first > max_id) {
+                    max_id = pair.first;
+                }
+            }
+            id = max_id + 1;
+        }
     }
 
-    void write_to_console() {
+    void write_to_console() const {
         cout << "Pipe id: " << id << endl;
         cout << "Pipe km_mark: " << km_mark << endl;
         cout << "Pipe length (km): " << length << endl;
@@ -68,7 +123,7 @@ public:
         cout << "Current status: " << is_in_repair << endl;
     }
 
-    void save_to_file(string filename) {
+    void save_to_file(string filename) const {
         ofstream out(filename, ios::app);
         if (out.is_open()) {
             if (validate_km_mark()) {
@@ -84,11 +139,11 @@ public:
         }
     }
 
-    int get_id() { return id; }
-    string get_km_mark() { return km_mark; }
-    bool get_is_in_repair() { return is_in_repair; }
-    float get_length() { return length; }
-    int get_diameter() { return diameter; }
+    int get_id() const { return id; }
+    string get_km_mark() const { return km_mark; }
+    bool get_is_in_repair() const { return is_in_repair; }
+    float get_length() const { return length; }
+    int get_diameter() const { return diameter; }
     
     void set_km_mark(string new_mark) { km_mark = new_mark; }
     void set_length(float new_length) { length = new_length; }
@@ -116,8 +171,11 @@ public:
     void read_from_console() {
         cout << "Input CS name: ";
         getline(cin, name);
+        write_to_log(name);
+        
         cout << "Input workshop_count: ";
         input_positive(workshop_count);
+        write_to_log(to_string(workshop_count));
         
         cout << "Input current_working_workshop_count: ";
         do {
@@ -127,16 +185,18 @@ public:
                 cout << "Input current_working_workshop_count: ";
             }
         } while (current_working_workshop_count > workshop_count);
+        write_to_log(to_string(current_working_workshop_count));
         
         cout << "Input station_cls: ";
         input_positive(station_cls);
+        write_to_log(to_string(station_cls));
     }
 
-    bool validate_name() {
+    bool validate_name() const {
         return (name != "");
     }
 
-    void write_to_console() {
+    void write_to_console() const {
         cout << "CS id: " << id << endl;
         cout << "CS name: " << name << endl;
         cout << "CS workshop_count: " << workshop_count << endl;
@@ -165,7 +225,7 @@ public:
         }
     }
 
-    void save_to_file(string filename) { 
+    void save_to_file(string filename) const { 
         ofstream out(filename, ios::app);
         if (out.is_open()) {
             if (validate_name()) {
@@ -181,20 +241,30 @@ public:
         }
     }
 
-    void print_workshop_managment() {
+    void print_workshop_managment() const {
         cout << "Current working workshops: " << current_working_workshop_count << " / " << workshop_count << endl;
     }
 
-    void assign_id(vector<CompressorStation> CSes) {
-        id = CSes.size() + 1;
+    void assign_id(const unordered_map<int, CompressorStation>& CSes) {
+        if (CSes.empty()) {
+            id = 1;
+        } else {
+            int max_id = 0;
+            for (const auto& pair : CSes) {
+                if (pair.first > max_id) {
+                    max_id = pair.first;
+                }
+            }
+            id = max_id + 1;
+        }
     }
 
-    int get_id() { return id; }
-    string get_name() { return name; }
-    int get_workshop_count() { return workshop_count; }
-    int get_current_working_workshop_count() { return current_working_workshop_count; }
+    int get_id() const { return id; }
+    string get_name() const { return name; }
+    int get_workshop_count() const { return workshop_count; }
+    int get_current_working_workshop_count() const { return current_working_workshop_count; }
     
-    double get_unused_workshop_percent() {
+    double get_unused_workshop_percent() const {
         if (workshop_count == 0) return 0;
         return ((workshop_count - current_working_workshop_count) * 100.0) / workshop_count;
     }
@@ -208,85 +278,84 @@ public:
     }
 };
 
-// Функции поиска для пакетного редактирования
-vector<int> search_pipes_by_name_for_batch(vector<Pipe>& pipes) {
+vector<int> search_pipes_by_name_for_batch(unordered_map<int, Pipe>& pipes) {
     string search_name;
     cout << "Enter pipe name to search: ";
     getline(cin, search_name);
+    write_to_log(search_name);
     
     vector<int> found_ids;
-    for (int i = 0; i < pipes.size(); i++) {
-        if (pipes[i].get_km_mark().find(search_name) != string::npos) {
-            cout << "ID: " << pipes[i].get_id() << " - " << pipes[i].get_km_mark() << endl;
-            found_ids.push_back(pipes[i].get_id());
+    for (const auto& pair : pipes) {
+        if (pair.second.get_km_mark().find(search_name) != string::npos) {
+            cout << "ID: " << pair.first << " - " << pair.second.get_km_mark() << endl;
+            found_ids.push_back(pair.first);
         }
     }
     return found_ids;
 }
 
-vector<int> search_pipes_by_repair_status_for_batch(vector<Pipe>& pipes) {
+vector<int> search_pipes_by_repair_status_for_batch(unordered_map<int, Pipe>& pipes) {
     int status;
     cout << "Search pipes by repair status (0 - not in repair, 1 - in repair): ";
     cin >> status;
+    write_to_log(to_string(status));
     clear();
     
     bool search_repair = (status == 1);
     vector<int> found_ids;
     
-    for (int i = 0; i < pipes.size(); i++) {
-        if (pipes[i].get_is_in_repair() == search_repair) {
-            cout << "ID: " << pipes[i].get_id() << " - " << pipes[i].get_km_mark() 
-                 << " (in repair: " << pipes[i].get_is_in_repair() << ")" << endl;
-            found_ids.push_back(pipes[i].get_id());
+    for (const auto& pair : pipes) {
+        if (pair.second.get_is_in_repair() == search_repair) {
+            cout << "ID: " << pair.first << " - " << pair.second.get_km_mark() 
+                 << " (in repair: " << pair.second.get_is_in_repair() << ")" << endl;
+            found_ids.push_back(pair.first);
         }
     }
     return found_ids;
 }
 
-// Функции пакетного редактирования
-void batch_change_repair_status(vector<Pipe>& pipes, vector<int> pipe_ids) {
+void batch_change_repair_status(unordered_map<int, Pipe>& pipes, vector<int> pipe_ids) {
     int new_status;
     cout << "Set new repair status (0 - not in repair, 1 - in repair): ";
     cin >> new_status;
+    write_to_log(to_string(new_status));
     clear();
     
     bool status = (new_status == 1);
     int changed_count = 0;
     
     for (int id : pipe_ids) {
-        for (int i = 0; i < pipes.size(); i++) {
-            if (pipes[i].get_id() == id) {
-                pipes[i].set_repair_status(status);
-                changed_count++;
-                break;
-            }
+        auto it = pipes.find(id);
+        if (it != pipes.end()) {
+            it->second.set_repair_status(status);
+            changed_count++;
         }
     }
     cout << "Changed repair status for " << changed_count << " pipes" << endl;
 }
 
-void batch_change_diameter(vector<Pipe>& pipes, vector<int> pipe_ids) {
+void batch_change_diameter(unordered_map<int, Pipe>& pipes, vector<int> pipe_ids) {
     int new_diameter;
     cout << "Enter new diameter: ";
     input_positive(new_diameter);
+    write_to_log(to_string(new_diameter));
     
     int changed_count = 0;
     for (int id : pipe_ids) {
-        for (int i = 0; i < pipes.size(); i++) {
-            if (pipes[i].get_id() == id) {
-                pipes[i].set_diameter(new_diameter);
-                changed_count++;
-                break;
-            }
+        auto it = pipes.find(id);
+        if (it != pipes.end()) {
+            it->second.set_diameter(new_diameter);
+            changed_count++;
         }
     }
     cout << "Changed diameter for " << changed_count << " pipes" << endl;
 }
 
-void batch_delete_pipes(vector<Pipe>& pipes, vector<int> pipe_ids) {
+void batch_delete_pipes(unordered_map<int, Pipe>& pipes, vector<int> pipe_ids) {
     cout << "This will delete " << pipe_ids.size() << " pipes. Are you sure? (1 - yes, 0 - no): ";
     int confirm;
     cin >> confirm;
+    write_to_log(to_string(confirm));
     clear();
     
     if (confirm != 1) {
@@ -294,24 +363,16 @@ void batch_delete_pipes(vector<Pipe>& pipes, vector<int> pipe_ids) {
         return;
     }
     
-    // Удаляем трубы в обратном порядке чтобы не сломать индексы
-    sort(pipe_ids.rbegin(), pipe_ids.rend());
     int deleted_count = 0;
-    
     for (int id : pipe_ids) {
-        for (int i = 0; i < pipes.size(); i++) {
-            if (pipes[i].get_id() == id) {
-                pipes.erase(pipes.begin() + i);
-                deleted_count++;
-                break;
-            }
+        if (pipes.erase(id)) {
+            deleted_count++;
         }
     }
     cout << "Deleted " << deleted_count << " pipes" << endl;
 }
 
-// Основная функция пакетного редактирования
-void batch_edit_pipes(vector<Pipe>& pipes) {
+void batch_edit_pipes(unordered_map<int, Pipe>& pipes) {
     if (pipes.empty()) {
         cout << "No pipes available for batch editing." << endl;
         return;
@@ -326,6 +387,7 @@ void batch_edit_pipes(vector<Pipe>& pipes) {
     
     int search_method;
     cin >> search_method;
+    write_to_log(to_string(search_method));
     clear();
     
     vector<int> selected_ids;
@@ -338,9 +400,8 @@ void batch_edit_pipes(vector<Pipe>& pipes) {
             selected_ids = search_pipes_by_repair_status_for_batch(pipes);
             break;
         case 3:
-            // Выбираем все трубы
-            for (int i = 0; i < pipes.size(); i++) {
-                selected_ids.push_back(pipes[i].get_id());
+            for (const auto& pair : pipes) {
+                selected_ids.push_back(pair.first);
             }
             cout << "Selected all " << selected_ids.size() << " pipes" << endl;
             break;
@@ -356,7 +417,6 @@ void batch_edit_pipes(vector<Pipe>& pipes) {
         return;
     }
     
-    // Выбор подмножества
     cout << "\nFound " << selected_ids.size() << " pipes." << endl;
     cout << "1. Edit all found pipes" << endl;
     cout << "2. Select specific pipes" << endl;
@@ -364,6 +424,7 @@ void batch_edit_pipes(vector<Pipe>& pipes) {
     
     int selection_option;
     cin >> selection_option;
+    write_to_log(to_string(selection_option));
     clear();
     
     vector<int> final_selection;
@@ -376,6 +437,7 @@ void batch_edit_pipes(vector<Pipe>& pipes) {
         set<int> selected_set(selected_ids.begin(), selected_ids.end());
         
         while (cin >> id && id != 0) {
+            write_to_log(to_string(id));
             if (selected_set.count(id)) {
                 final_selection.push_back(id);
                 cout << "Added pipe ID: " << id << endl;
@@ -394,7 +456,6 @@ void batch_edit_pipes(vector<Pipe>& pipes) {
         return;
     }
     
-    // Выбор действия
     cout << "\nSelected " << final_selection.size() << " pipes for editing." << endl;
     cout << "1. Change repair status" << endl;
     cout << "2. Change diameter" << endl;
@@ -404,6 +465,7 @@ void batch_edit_pipes(vector<Pipe>& pipes) {
     
     int action;
     cin >> action;
+    write_to_log(to_string(action));
     clear();
     
     switch (action) {
@@ -424,16 +486,16 @@ void batch_edit_pipes(vector<Pipe>& pipes) {
     }
 }
 
-// Старые функции поиска (для просмотра)
-void search_pipes_by_name(vector<Pipe>& pipes) {
+void search_pipes_by_name(const unordered_map<int, Pipe>& pipes) {
     string search_name;
     cout << "Enter pipe name to search: ";
     getline(cin, search_name);
+    write_to_log(search_name);
     
     bool found = false;
-    for (int i = 0; i < pipes.size(); i++) {
-        if (pipes[i].get_km_mark().find(search_name) != string::npos) {
-            pipes[i].write_to_console();
+    for (const auto& pair : pipes) {
+        if (pair.second.get_km_mark().find(search_name) != string::npos) {
+            pair.second.write_to_console();
             found = true;
         }
     }
@@ -442,18 +504,19 @@ void search_pipes_by_name(vector<Pipe>& pipes) {
     }
 }
 
-void search_pipes_by_repair_status(vector<Pipe>& pipes) {
+void search_pipes_by_repair_status(const unordered_map<int, Pipe>& pipes) {
     int status;
     cout << "Search pipes by repair status (0 - not in repair, 1 - in repair): ";
     cin >> status;
+    write_to_log(to_string(status));
     clear();
     
     bool search_repair = (status == 1);
     bool found = false;
     
-    for (int i = 0; i < pipes.size(); i++) {
-        if (pipes[i].get_is_in_repair() == search_repair) {
-            pipes[i].write_to_console();
+    for (const auto& pair : pipes) {
+        if (pair.second.get_is_in_repair() == search_repair) {
+            pair.second.write_to_console();
             found = true;
         }
     }
@@ -462,15 +525,16 @@ void search_pipes_by_repair_status(vector<Pipe>& pipes) {
     }
 }
 
-void search_cs_by_name(vector<CompressorStation>& CSes) {
+void search_cs_by_name(const unordered_map<int, CompressorStation>& CSes) {
     string search_name;
     cout << "Enter CS name to search: ";
     getline(cin, search_name);
+    write_to_log(search_name);
     
     bool found = false;
-    for (int i = 0; i < CSes.size(); i++) {
-        if (CSes[i].get_name().find(search_name) != string::npos) {
-            CSes[i].write_to_console();
+    for (const auto& pair : CSes) {
+        if (pair.second.get_name().find(search_name) != string::npos) {
+            pair.second.write_to_console();
             found = true;
         }
     }
@@ -479,19 +543,21 @@ void search_cs_by_name(vector<CompressorStation>& CSes) {
     }
 }
 
-void search_cs_by_unused_percent(vector<CompressorStation>& CSes) {
+void search_cs_by_unused_percent(const unordered_map<int, CompressorStation>& CSes) {
     double min_percent, max_percent;
     cout << "Enter minimum percent of unused workshops: ";
     cin >> min_percent;
+    write_to_log(to_string(min_percent));
     cout << "Enter maximum percent of unused workshops: ";
     cin >> max_percent;
+    write_to_log(to_string(max_percent));
     clear();
     
     bool found = false;
-    for (int i = 0; i < CSes.size(); i++) {
-        double unused_percent = CSes[i].get_unused_workshop_percent();
+    for (const auto& pair : CSes) {
+        double unused_percent = pair.second.get_unused_workshop_percent();
         if (unused_percent >= min_percent && unused_percent <= max_percent) {
-            CSes[i].write_to_console();
+            pair.second.write_to_console();
             cout << "Unused workshops: " << unused_percent << "%" << endl;
             found = true;
         }
@@ -502,7 +568,7 @@ void search_cs_by_unused_percent(vector<CompressorStation>& CSes) {
     }
 }
 
-void search_objects(vector<Pipe>& pipes, vector<CompressorStation>& CSes) {
+void search_objects(const unordered_map<int, Pipe>& pipes, const unordered_map<int, CompressorStation>& CSes) {
     int search_type;
     cout << "\n=== Search Objects ===" << endl;
     cout << "1. Search pipes by name" << endl;
@@ -513,6 +579,7 @@ void search_objects(vector<Pipe>& pipes, vector<CompressorStation>& CSes) {
     cout << "Choose search type: ";
     
     cin >> search_type;
+    write_to_log(to_string(search_type));
     clear();
     
     switch (search_type) {
@@ -551,7 +618,7 @@ void search_objects(vector<Pipe>& pipes, vector<CompressorStation>& CSes) {
     }
 }
 
-void load_from_file(string filename, vector<Pipe>& pipes, vector<CompressorStation>& CSes) {
+void load_from_file(string filename, unordered_map<int, Pipe>& pipes, unordered_map<int, CompressorStation>& CSes) {
     ifstream in(filename);
     if (!in.is_open()) {
         cout << "Error: Cannot open file " << filename << endl;
@@ -595,7 +662,7 @@ void load_from_file(string filename, vector<Pipe>& pipes, vector<CompressorStati
 
             Pipe pipe;
             pipe.load_data(id, km_mark, length, diameter, is_in_repair);
-            pipes.push_back(pipe);
+            pipes[id] = pipe;
             count--;
             objects_loaded++;
         }
@@ -619,7 +686,7 @@ void load_from_file(string filename, vector<Pipe>& pipes, vector<CompressorStati
 
             CompressorStation cs;
             cs.load_data(id, name, workshop_count, current_working_workshop_count, station_cls);
-            CSes.push_back(cs);
+            CSes[id] = cs;
             count--;
             objects_loaded++;
         }
@@ -634,23 +701,14 @@ void truncate_file(string filename) {
     clear_file.close();
 }
 
-void write_to_log(int user_input) {
-    ofstream logger("logs.txt", ios::app);
-    if (logger.is_open()) {
-        logger << user_input << endl;
-        logger.close();
-    }
-}
-
 int main() {
-    vector<Pipe> pipes;
-    vector<CompressorStation> CSes;
+    unordered_map<int, Pipe> pipes;
+    unordered_map<int, CompressorStation> CSes;
     int user_input;
     string filename;
     
-    truncate_file("logs.txt");
-    write_to_log(0);
-
+    initialize_logging();
+    
     while (true) {
         cout << "\n=== Gas Transmission Network Manager ===" << endl;
         cout << "1. Add Pipe" << endl;
@@ -668,31 +726,28 @@ int main() {
 
         if (!(cin >> user_input)) {
             cout << "Invalid input. Please enter a number." << endl;
-            write_to_log(-1);
             clear();
             continue;
         }
         
-        write_to_log(user_input);
+        write_to_log(to_string(user_input));
         clear();
         
         switch (user_input) {
         case 1: {
-            cout << "\n=== Adding New Pipe ===" << endl;
             Pipe pipe;
             pipe.read_from_console();
             pipe.assign_id(pipes);
-            pipes.push_back(pipe);
+            pipes[pipe.get_id()] = pipe;
             cout << "Pipe added successfully!" << endl;
             break;
         }
 
         case 2: {
-            cout << "\n=== Adding New Compressor Station ===" << endl;
             CompressorStation cs;
             cs.read_from_console();
             cs.assign_id(CSes);
-            CSes.push_back(cs);
+            CSes[cs.get_id()] = cs;
             cout << "Compressor Station added successfully!" << endl;
             break;
         }
@@ -703,8 +758,8 @@ int main() {
                 cout << "No pipes data available" << endl;
             } else {
                 cout << "\n--- Pipes (" << pipes.size() << ") ---" << endl;
-                for (int i = 0; i < pipes.size(); i++) {
-                    pipes[i].write_to_console();
+                for (const auto& pair : pipes) {
+                    pair.second.write_to_console();
                 }
             }
 
@@ -712,8 +767,8 @@ int main() {
                 cout << "No compressor stations data available" << endl;
             } else {
                 cout << "\n--- Compressor Stations (" << CSes.size() << ") ---" << endl;
-                for (int i = 0; i < CSes.size(); i++) {
-                    CSes[i].write_to_console();
+                for (const auto& pair : CSes) {
+                    pair.second.write_to_console();
                 }
             }
             break;
@@ -725,22 +780,18 @@ int main() {
             }
             
             cout << "Available pipes:" << endl;
-            for (int i = 0; i < pipes.size(); i++) {
-                cout << "ID: " << pipes[i].get_id() << " - " << pipes[i].get_km_mark() << endl;
+            for (const auto& pair : pipes) {
+                cout << "ID: " << pair.first << " - " << pair.second.get_km_mark() << endl;
             }
             
             cout << "Enter pipe ID to change status: ";
             int pipe_id;
             if (cin >> pipe_id) {
-                bool found = false;
-                for (int i = 0; i < pipes.size(); i++) {
-                    if (pipes[i].get_id() == pipe_id) {
-                        pipes[i].change_status();
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) {
+                write_to_log(to_string(pipe_id));
+                auto it = pipes.find(pipe_id);
+                if (it != pipes.end()) {
+                    it->second.change_status();
+                } else {
                     cout << "Pipe with ID " << pipe_id << " not found!" << endl;
                 }
             } else {
@@ -756,38 +807,35 @@ int main() {
             }
             
             cout << "Available compressor stations:" << endl;
-            for (int i = 0; i < CSes.size(); i++) {
-                cout << "ID: " << CSes[i].get_id() << " - " << CSes[i].get_name() << endl;
+            for (const auto& pair : CSes) {
+                cout << "ID: " << pair.first << " - " << pair.second.get_name() << endl;
             }
             
             cout << "Enter CS ID to manage: ";
             int cs_id;
             if (cin >> cs_id) {
-                bool found = false;
-                for (int i = 0; i < CSes.size(); i++) {
-                    if (CSes[i].get_id() == cs_id) {
-                        CSes[i].print_workshop_managment();
-                        cout << "1. Start workshop" << endl;
-                        cout << "2. Stop workshop" << endl;
+                write_to_log(to_string(cs_id));
+                auto it = CSes.find(cs_id);
+                if (it != CSes.end()) {
+                    it->second.print_workshop_managment();
+                    cout << "1. Start workshop" << endl;
+                    cout << "2. Stop workshop" << endl;
 
-                        int cs_action;
-                        cout << "Choose action: ";
-                        if (cin >> cs_action) {
-                            if (cs_action == 1) {
-                                CSes[i].start_workshop();
-                            } else if (cs_action == 2) {
-                                CSes[i].stop_workshop();
-                            } else {
-                                cout << "Invalid action!" << endl;
-                            }
+                    int cs_action;
+                    cout << "Choose action: ";
+                    if (cin >> cs_action) {
+                        write_to_log(to_string(cs_action));
+                        if (cs_action == 1) {
+                            it->second.start_workshop();
+                        } else if (cs_action == 2) {
+                            it->second.stop_workshop();
                         } else {
-                            cout << "Invalid input!" << endl;
+                            cout << "Invalid action!" << endl;
                         }
-                        found = true;
-                        break;
+                    } else {
+                        cout << "Invalid input!" << endl;
                     }
-                }
-                if (!found) {
+                } else {
                     cout << "CS with ID " << cs_id << " not found!" << endl;
                 }
             } else {
@@ -799,6 +847,7 @@ int main() {
         case 6:
             cout << "Enter filename: ";
             getline(cin, filename);
+            write_to_log(filename);
             
             cout << "\n=== Saving Data ===" << endl;
             if (pipes.empty() && CSes.empty()) {
@@ -812,8 +861,8 @@ int main() {
                 ofstream out(filename, ios::app);
                 out << "P " << pipes.size() << endl;
                 out.close();
-                for (int i = 0; i < pipes.size(); i++) {
-                    pipes[i].save_to_file(filename);
+                for (const auto& pair : pipes) {
+                    pair.second.save_to_file(filename);
                 }
                 cout << "Saved " << pipes.size() << " pipes" << endl;
             }
@@ -822,8 +871,8 @@ int main() {
                 ofstream out(filename, ios::app);
                 out << "C " << CSes.size() << endl;
                 out.close();
-                for (int i = 0; i < CSes.size(); i++) {
-                    CSes[i].save_to_file(filename);
+                for (const auto& pair : CSes) {
+                    pair.second.save_to_file(filename);
                 }
                 cout << "Saved " << CSes.size() << " compressor stations" << endl;
             }
@@ -832,6 +881,7 @@ int main() {
         case 7:
             cout << "Enter filename: ";
             getline(cin, filename);
+            write_to_log(filename);
             cout << "\n=== Loading Data ===" << endl;
             load_from_file(filename, pipes, CSes);
             break;
@@ -847,12 +897,14 @@ int main() {
         case 10:
             cout << "Enter filename to truncate: ";
             getline(cin, filename);
+            write_to_log(filename);
             truncate_file(filename);
             cout << "Successfully truncated the file" << endl;
             break;
 
         case 0:
             cout << "Exiting program. Goodbye!" << endl;
+            close_logging();
             return 0;
             
         default:
