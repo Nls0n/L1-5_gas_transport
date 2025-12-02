@@ -4,7 +4,7 @@
 
 # Windows
 ```cmd
-g++ -o app.exe main.cpp pipe.cpp compressorStation.cpp utils.cpp search.cpp file_operations.cpp
+g++ -o app.exe .\compressor_station.cpp .\pipe.cpp .\search_utils.cpp .\utils.cpp .\main.cpp
 .\app.exe
 ```
 
