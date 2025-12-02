@@ -7,7 +7,7 @@
 #include <limits>
 #include <unordered_map>
 
-// Предварительное объявление классов чтобы избежать циклических зависимостей
+// Предварительное объявление классов
 class Pipe;
 class CompressorStation;
 
@@ -15,6 +15,7 @@ class CompressorStation;
 void clear();
 template<typename T>
 void input_positive(T& var);
+bool input_valid_diameter(int& diameter);  // Новая функция
 
 // Функции для логирования
 void initialize_logging();

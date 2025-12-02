@@ -16,8 +16,11 @@ void Pipe::read_from_console() {
     input_positive(length);
     write_to_log(to_string(length));
     
-    cout << "Input pipe diameter: ";
-    input_positive(diameter);
+    // Используем новую функцию для валидации диаметра
+    cout << "Input pipe diameter (valid values: 500, 700, 1000, 1400 mm): ";
+    int temp_diameter;
+    input_valid_diameter(temp_diameter);
+    diameter = temp_diameter;
     write_to_log(to_string(diameter));
     
     cout << "Input is_in_repair status: ";
@@ -27,6 +30,8 @@ void Pipe::read_from_console() {
     }
     write_to_log(to_string(is_in_repair));
     clear();
+    
+    is_connected = false;  // Инициализируем как неподключенную
 }
 
 bool Pipe::validate_km_mark() const {
@@ -53,6 +58,7 @@ void Pipe::write_to_console() const {
     cout << "Pipe length (km): " << length << endl;
     cout << "Pipe diameter (mm): " << diameter << endl;
     cout << "Pipe is_in_repair: " << is_in_repair << endl;
+    cout << "Pipe is_connected: " << is_connected << endl;
     cout << "------------------------" << endl;
 }
 
@@ -70,6 +76,7 @@ void Pipe::save_to_file(string filename) const {
             out << length << endl;
             out << diameter << endl;
             out << is_in_repair << endl;
+            // Не сохраняем is_connected, так как это временное состояние
         }
     }
     else {
@@ -83,4 +90,5 @@ void Pipe::load_data(int new_id, string mark, float len, int diam, bool repair) 
     length = len;
     diameter = diam;
     is_in_repair = repair;
+    is_connected = false;  // При загрузке из файла считаем трубу неподключенной
 }

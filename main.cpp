@@ -14,12 +14,14 @@
 #include "compressor_station.h"
 #include "utils.h"
 #include "search_utils.h"
+#include "network.h"  // Новый заголовочный файл
 
 using namespace std;
 
 int main() {
     unordered_map<int, Pipe> pipes;
     unordered_map<int, CompressorStation> CSes;
+    GasNetwork network;  // Новая переменная для сети
     int user_input;
     string filename;
     
@@ -32,13 +34,16 @@ int main() {
         cout << "3. View All Objects" << endl;
         cout << "4. Change Pipe Status" << endl;
         cout << "5. Manage Compressor Station Workshops" << endl;
-        cout << "6. Save Data to Files" << endl;
-        cout << "7. Load Data from Files" << endl;
-        cout << "8. Search Objects" << endl;
-        cout << "9. Batch Edit Pipes" << endl;
-        cout << "10. Truncate File" << endl;
+        cout << "6. Connect Stations (Create Network)" << endl;  // Новая опция
+        cout << "7. View Network" << endl;  // Новая опция
+        cout << "8. Topological Sort" << endl;  // Новая опция
+        cout << "9. Save Data to Files" << endl;
+        cout << "10. Load Data from Files" << endl;
+        cout << "11. Search Objects" << endl;
+        cout << "12. Batch Edit Pipes" << endl;
+        cout << "13. Truncate File" << endl;
         cout << "0. Exit" << endl;
-        cout << "Enter command [0-10]: ";
+        cout << "Enter command [0-13]: ";
 
         if (!(cin >> user_input)) {
             cout << "Invalid input. Please enter a number." << endl;
@@ -76,6 +81,8 @@ int main() {
                 cout << "\n--- Pipes (" << pipes.size() << ") ---" << endl;
                 for (const auto& pair : pipes) {
                     pair.second.write_to_console();
+                    cout << "Connected: " << (pair.second.get_is_connected() ? "Yes" : "No") << endl;
+                    cout << "------------------------" << endl;
                 }
             }
 
@@ -97,7 +104,8 @@ int main() {
             
             cout << "Available pipes:" << endl;
             for (const auto& pair : pipes) {
-                cout << "ID: " << pair.first << " - " << pair.second.get_km_mark() << endl;
+                cout << "ID: " << pair.first << " - " << pair.second.get_km_mark() 
+                     << " (Connected: " << (pair.second.get_is_connected() ? "Yes" : "No") << ")" << endl;
             }
             
             cout << "Enter pipe ID to change status: ";
@@ -160,7 +168,97 @@ int main() {
             clear();
             break;
 
-        case 6:
+        case 6:  // Новая опция: соединение станций
+            if (CSes.size() < 2) {
+                cout << "Need at least 2 compressor stations to create connections!" << endl;
+                break;
+            }
+            
+            cout << "\n=== Connect Compressor Stations ===" << endl;
+            cout << "Available compressor stations:" << endl;
+            for (const auto& pair : CSes) {
+                cout << "ID: " << pair.first << " - " << pair.second.get_name() << endl;
+            }
+            
+            int start_id, end_id, diameter;
+            cout << "Enter start CS ID: ";
+            if (!(cin >> start_id)) {
+                cout << "Invalid input!" << endl;
+                clear();
+                break;
+            }
+            write_to_log(to_string(start_id));
+            
+            cout << "Enter end CS ID: ";
+            if (!(cin >> end_id)) {
+                cout << "Invalid input!" << endl;
+                clear();
+                break;
+            }
+            write_to_log(to_string(end_id));
+            
+            // Проверка существования станций
+            if (!network.cs_exists(start_id, CSes)) {
+                cout << "Start CS with ID " << start_id << " does not exist!" << endl;
+                clear();
+                break;
+            }
+            
+            if (!network.cs_exists(end_id, CSes)) {
+                cout << "End CS with ID " << end_id << " does not exist!" << endl;
+                clear();
+                break;
+            }
+            
+            // Ввод диаметра
+            cout << "Enter pipe diameter for connection: ";
+            if (!input_valid_diameter(diameter)) {
+                break;
+            }
+            
+            // Установка соединения
+            network.connect_stations(start_id, end_id, diameter, pipes);
+            clear();
+            break;
+
+        case 7:  // Новая опция: просмотр сети
+            network.display_network(CSes, pipes);
+            break;
+
+        case 8:  // Новая опция: топологическая сортировка
+            if (CSes.empty()) {
+                cout << "No compressor stations in the network!" << endl;
+                break;
+            }
+            
+            cout << "\n=== Topological Sort ===" << endl;
+            
+            // Проверка на циклы
+            if (network.has_cycle()) {
+                cout << "Warning: Network contains cycles!" << endl;
+                cout << "Topological sort is not possible for cyclic graphs." << endl;
+            } else {
+                vector<int> sorted_order = network.topological_sort(CSes);
+                
+                if (sorted_order.empty()) {
+                    cout << "No connections in the network." << endl;
+                } else {
+                    cout << "Topological order of compressor stations:" << endl;
+                    for (size_t i = 0; i < sorted_order.size(); ++i) {
+                        int cs_id = sorted_order[i];
+                        auto it = CSes.find(cs_id);
+                        if (it != CSes.end()) {
+                            cout << (i + 1) << ". CS " << cs_id << " (" 
+                                 << it->second.get_name() << ")" << endl;
+                        } else {
+                            cout << (i + 1) << ". CS " << cs_id << " (deleted)" << endl;
+                        }
+                    }
+                }
+            }
+            break;
+
+        case 9:
             cout << "Enter filename: ";
             getline(cin, filename);
             write_to_log(filename);
@@ -194,7 +292,7 @@ int main() {
             }
             break;
 
-        case 7:
+        case 10:
             cout << "Enter filename: ";
             getline(cin, filename);
             write_to_log(filename);
@@ -202,15 +300,15 @@ int main() {
             load_from_file(filename, pipes, CSes);
             break;
 
-        case 8:
+        case 11:
             search_objects(pipes, CSes);
             break;
 
-        case 9:
+        case 12:
             batch_edit_pipes(pipes);
             break;
 
-        case 10:
+        case 13:
             cout << "Enter filename to truncate: ";
             getline(cin, filename);
             write_to_log(filename);
@@ -224,7 +322,7 @@ int main() {
             return 0;
             
         default:
-            cout << "Input is incorrect. Please try digits in range [0-10]" << endl;
+            cout << "Input is incorrect. Please try digits in range [0-13]" << endl;
         }
     }
     return 0;

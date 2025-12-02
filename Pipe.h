@@ -12,6 +12,7 @@ private:
     int diameter;
     bool is_in_repair;
     int id;
+    bool is_connected;  // Новая переменная для отслеживания подключения
 
 public:
     void read_from_console();
@@ -27,12 +28,14 @@ public:
     bool get_is_in_repair() const { return is_in_repair; }
     float get_length() const { return length; }
     int get_diameter() const { return diameter; }
+    bool get_is_connected() const { return is_connected; }  // Новый геттер
     
     // Сеттеры
     void set_km_mark(std::string new_mark) { km_mark = new_mark; }
     void set_length(float new_length) { length = new_length; }
     void set_diameter(int new_diameter) { diameter = new_diameter; }
     void set_repair_status(bool status) { is_in_repair = status; }
+    void set_connected(bool connected) { is_connected = connected; }  // Новый сеттер
     
     void load_data(int new_id, std::string mark, float len, int diam, bool repair);
 };

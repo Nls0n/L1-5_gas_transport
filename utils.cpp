@@ -8,6 +8,7 @@
 #include <chrono>
 #include <iomanip>
 #include <sstream>
+#include <set>
 
 using namespace std;
 
@@ -57,6 +58,20 @@ void input_positive(T& var) {
         cout << "Invalid input. Enter positive number: ";
     }
     clear();
+}
+
+// Новая функция для валидации диаметра
+bool input_valid_diameter(int& diameter) {
+    set<int> valid_diameters = {500, 700, 1000, 1400};
+    
+    cout << "Enter pipe diameter (valid values: 500, 700, 1000, 1400 mm): ";
+    
+    while (!(cin >> diameter) || valid_diameters.find(diameter) == valid_diameters.end()) {
+        clear();
+        cout << "Invalid diameter! Please enter one of: 500, 700, 1000, 1400: ";
+    }
+    clear();
+    return true;
 }
 
 // Явная инстанциация шаблона для поддерживаемых типов
